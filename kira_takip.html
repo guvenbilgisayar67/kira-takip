@@ -147,9 +147,29 @@ textarea{resize:vertical;min-height:70px}
 .mobile-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:299}
 .toast{position:fixed;bottom:24px;right:24px;background:#1a1a18;color:#fff;padding:12px 18px;border-radius:8px;font-size:13px;z-index:999;opacity:0;transform:translateY(10px);transition:all 0.25s;pointer-events:none}
 .toast.show{opacity:1;transform:translateY(0)}
+#login-screen{position:fixed;inset:0;background:#f5f5f0;z-index:9999;display:flex;align-items:center;justify-content:center}
+#login-screen.hidden{display:none}
+.login-box{background:#fff;border:1px solid #e8e8e4;border-radius:16px;padding:40px 36px;width:min(360px,90%);text-align:center}
+.login-logo{font-size:40px;margin-bottom:12px}
+.login-title{font-size:22px;font-weight:700;margin-bottom:4px}
+.login-sub{font-size:13px;color:#888780;margin-bottom:28px}
+.login-box input{text-align:center;font-size:20px;letter-spacing:6px;margin-bottom:14px;padding:12px}
+.login-box .btn{width:100%;padding:12px;font-size:15px;font-weight:600}
+.login-error{color:#a32d2d;font-size:13px;margin-top:10px;min-height:20px}
 </style>
 </head>
 <body>
+
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">🏢</div>
+    <div class="login-title">Kira Takip</div>
+    <div class="login-sub">Devam etmek için şifrenizi girin</div>
+    <input type="password" id="login-input" placeholder="••••••••" onkeydown="if(event.key==='Enter')checkLogin()">
+    <button class="btn btn-primary" onclick="checkLogin()">Giriş yap</button>
+    <div class="login-error" id="login-error"></div>
+  </div>
+</div>
 
 <button class="hamburger" id="hamburger" onclick="toggleSidebar()">
   <span></span><span></span><span></span>
@@ -554,6 +574,28 @@ textarea{resize:vertical;min-height:70px}
 </div>
 
 <script>
+const APP_PASS='21201988';
+function checkLogin(){
+  const val=document.getElementById('login-input').value;
+  const err=document.getElementById('login-error');
+  if(val===APP_PASS){
+    sessionStorage.setItem('kira_auth','1');
+    document.getElementById('login-screen').classList.add('hidden');
+    err.textContent='';
+  }else{
+    err.textContent='Şifre yanlış, tekrar deneyin.';
+    document.getElementById('login-input').value='';
+    document.getElementById('login-input').focus();
+  }
+}
+function checkAuth(){
+  if(sessionStorage.getItem('kira_auth')!=='1'){
+    document.getElementById('login-screen').classList.remove('hidden');
+    return false;
+  }
+  document.getElementById('login-screen').classList.add('hidden');
+  return true;
+}
 const SUPA_URL='https://owjqtmfubtfcmhuexulj.supabase.co';
 const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im93anF0bWZ1YnRmY21odWV4dWxqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY1MDk3NjksImV4cCI6MjA5MjA4NTc2OX0.qF--MR4xYYM7VPUUN7Qjus1xl7bDfPaQWlj45o4kAdo';
 const {createClient}=supabase;
@@ -1238,7 +1280,7 @@ async function openReminderModal(){
 function saveSettings(){toast('Ayarlar kaydedildi!');}
 
 // İLK YÜKLEME
-document.addEventListener('DOMContentLoaded',()=>{
+document.addEventListener("DOMContentLoaded",()=>{
   loadDashboard();
   document.querySelector('[onclick*="modal-tenant"]').onclick=openTenantModal;
   document.querySelector('[onclick*="modal-reminder"]').onclick=openReminderModal;
