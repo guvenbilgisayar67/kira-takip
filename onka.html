@@ -1181,7 +1181,14 @@ async function saveProperty(){
 }
 
 async function deleteProperty(id){
-  if(!confirm('Bu mülkü silmek istediğinizden emin misiniz?'))return;
+  // Önce aktif kiracı var mı kontrol et
+  const{data:aktivKiraciler}=await db.from('tenants').select('id,name').eq('property_id',id).eq('is_active',true);
+  if(aktivKiraciler&&aktivKiraciler.length>0){
+    const isimler=aktivKiraciler.map(t=>t.name).join(', ');
+    alert(`⚠️ Bu mülkü silemezsiniz!\n\nİçinde ${aktivKiraciler.length} aktif kiracı var:\n${isimler}\n\nÖnce kiracıları pasife alın veya silin, sonra mülkü silebilirsiniz.`);
+    return;
+  }
+  if(!confirm('Bu mülkü silmek istediğinizden emin misiniz?\nBoş daireler de kaldırılacak.'))return;
   await db.from('properties').update({is_active:false}).eq('id',id);
   toast('Mülk silindi');loadProperties();
 }
@@ -1216,6 +1223,11 @@ async function saveApartment(){
 }
 
 async function deleteApartment(id){
+  const{data:aktivKiraciler}=await db.from('tenants').select('id,name').eq('apartment_id',id).eq('is_active',true);
+  if(aktivKiraciler&&aktivKiraciler.length>0){
+    alert(`⚠️ Bu daireyi silemezsiniz!\n\nİçinde aktif kiracı var: ${aktivKiraciler[0].name}\n\nÖnce kiracıyı pasife alın veya silin, sonra daireyi silebilirsiniz.`);
+    return;
+  }
   if(!confirm('Bu daireyi silmek istediğinizden emin misiniz?'))return;
   await db.from('apartments').delete().eq('id',id);
   toast('Daire silindi');
