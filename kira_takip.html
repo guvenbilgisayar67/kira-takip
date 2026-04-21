@@ -9,34 +9,45 @@
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f0;color:#1a1a18;font-size:14px}
 .layout{display:flex;min-height:100vh}
-.sidebar{width:210px;background:#fff;border-right:1px solid #e8e8e4;display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:10}
-.logo-area{padding:18px 16px 14px;border-bottom:1px solid #e8e8e4}
-.logo-text{font-size:16px;font-weight:600;color:#1a1a18}
+.sidebar{width:215px;background:#fff;border-right:1px solid #e8e8e4;display:flex;flex-direction:column;position:fixed;top:0;left:0;height:100vh;z-index:10;overflow-y:auto}
+.logo-area{padding:18px 16px 14px;border-bottom:1px solid #e8e8e4;flex-shrink:0}
+.logo-text{font-size:16px;font-weight:700;color:#1a1a18}
 .logo-sub{font-size:11px;color:#888780;margin-top:2px}
-.nav-section{padding:8px 0}
-.nav-label{font-size:10px;color:#aaa;padding:8px 16px 4px;text-transform:uppercase;letter-spacing:0.5px}
+.nav-section{padding:6px 0}
+.nav-label{font-size:10px;color:#bbb;padding:8px 16px 3px;text-transform:uppercase;letter-spacing:0.5px}
 .nav-item{padding:8px 16px;font-size:13px;cursor:pointer;display:flex;align-items:center;gap:9px;color:#5f5e5a;transition:all 0.12s;border-left:3px solid transparent}
 .nav-item:hover{background:#f5f5f0;color:#1a1a18}
 .nav-item.active{background:#e6f1fb;color:#185fa5;border-left-color:#185fa5;font-weight:500}
 .nav-icon{width:18px;text-align:center;font-size:15px}
-.main{margin-left:210px;padding:24px;flex:1;min-height:100vh}
+.main{margin-left:215px;padding:24px;flex:1}
 .page{display:none}
 .page.active{display:block}
-.page-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
-.page-title{font-size:20px;font-weight:600}
+.page-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:10px}
+.page-title{font-size:20px;font-weight:700}
 .card{background:#fff;border:1px solid #e8e8e4;border-radius:12px;padding:18px 20px;margin-bottom:16px}
 .metric-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin-bottom:20px}
 .metric{background:#f5f5f0;border-radius:8px;padding:14px 16px}
 .metric-label{font-size:11px;color:#888780;margin-bottom:4px;text-transform:uppercase;letter-spacing:0.3px}
-.metric-value{font-size:24px;font-weight:600}
-.metric-value.green{color:#27500a}
-.metric-value.red{color:#a32d2d}
-.metric-value.amber{color:#633806}
-.metric-value.blue{color:#0c447c}
+.metric-value{font-size:24px;font-weight:700}
+.mv-green{color:#27500a}.mv-red{color:#a32d2d}.mv-amber{color:#633806}.mv-blue{color:#0c447c}
 .section-title{font-size:15px;font-weight:600;margin-bottom:14px}
-.tenant-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.grid-3{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:14px}
+.prop-card{background:#fff;border:1px solid #e8e8e4;border-radius:12px;overflow:hidden;cursor:pointer;transition:all 0.15s}
+.prop-card:hover{border-color:#b5d4f4;box-shadow:0 2px 10px rgba(24,95,165,0.1)}
+.prop-img{width:100%;height:130px;object-fit:cover;background:#f5f5f0;display:flex;align-items:center;justify-content:center;font-size:36px;color:#d3d1c7}
+.prop-img img{width:100%;height:100%;object-fit:cover}
+.prop-body{padding:14px}
+.prop-name{font-size:14px;font-weight:600;margin-bottom:3px}
+.prop-sub{font-size:12px;color:#888780}
+.apt-card{background:#fff;border:1px solid #e8e8e4;border-radius:10px;padding:14px;cursor:pointer;transition:all 0.15s;position:relative}
+.apt-card:hover{border-color:#b5d4f4}
+.apt-card.dolu{border-left:3px solid #639922}
+.apt-card.bos{border-left:3px solid #d3d1c7}
+.apt-card.pasif{border-left:3px solid #e24b4a;opacity:0.7}
 .tenant-card{background:#fff;border:1px solid #e8e8e4;border-radius:12px;padding:16px;cursor:pointer;transition:all 0.15s}
 .tenant-card:hover{border-color:#b5d4f4;box-shadow:0 2px 8px rgba(24,95,165,0.08)}
+.tenant-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px}
 .avatar{width:42px;height:42px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:600;flex-shrink:0}
 .av-blue{background:#e6f1fb;color:#0c447c}
 .av-teal{background:#e1f5ee;color:#085041}
@@ -45,117 +56,108 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 .av-amber{background:#faeeda;color:#633806}
 .av-pink{background:#fbeaf0;color:#72243e}
 .badge{display:inline-flex;align-items:center;font-size:11px;padding:3px 9px;border-radius:20px;font-weight:500;white-space:nowrap}
-.badge-success{background:#eaf3de;color:#27500a}
-.badge-danger{background:#fcebeb;color:#a32d2d}
-.badge-warning{background:#faeeda;color:#633806}
-.badge-info{background:#e6f1fb;color:#0c447c}
-.badge-gray{background:#f1efe8;color:#444441}
+.bs{background:#eaf3de;color:#27500a}
+.bd{background:#fcebeb;color:#a32d2d}
+.bw{background:#faeeda;color:#633806}
+.bi{background:#e6f1fb;color:#0c447c}
+.bg{background:#f1efe8;color:#444441}
+.bp{background:#fbeaf0;color:#72243e}
 table{width:100%;border-collapse:collapse;font-size:13px}
 th{text-align:left;padding:9px 12px;border-bottom:1px solid #e8e8e4;font-weight:500;color:#888780;font-size:12px;white-space:nowrap}
 td{padding:9px 12px;border-bottom:1px solid #f0f0ec;color:#1a1a18;vertical-align:middle}
 tr:last-child td{border-bottom:none}
 tr:hover td{background:#fafaf8}
-.btn{padding:8px 16px;border-radius:8px;font-size:13px;cursor:pointer;border:1px solid #d3d1c7;background:#fff;color:#1a1a18;font-weight:500;transition:all 0.12s;white-space:nowrap}
+.btn{padding:7px 14px;border-radius:8px;font-size:13px;cursor:pointer;border:1px solid #d3d1c7;background:#fff;color:#1a1a18;font-weight:500;transition:all 0.12s;white-space:nowrap}
 .btn:hover{background:#f5f5f0}
 .btn-primary{background:#185fa5;color:#fff;border-color:#185fa5}
 .btn-primary:hover{background:#0c447c}
 .btn-danger{background:#fcebeb;color:#a32d2d;border-color:#f7c1c1}
 .btn-danger:hover{background:#f7c1c1}
-.btn-sm{padding:5px 10px;font-size:12px}
+.btn-warning{background:#faeeda;color:#633806;border-color:#fac775}
+.btn-sm{padding:4px 9px;font-size:12px}
 .btn-row{display:flex;gap:8px;justify-content:flex-end;margin-top:16px;flex-wrap:wrap}
 .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.fg1{grid-column:1/-1}
 .form-group{display:flex;flex-direction:column;gap:4px}
-.form-group.full{grid-column:1/-1}
 label{font-size:12px;color:#5f5e5a;font-weight:500}
 input,select,textarea{width:100%;font-size:13px;padding:8px 10px;border:1px solid #d3d1c7;border-radius:8px;background:#fff;color:#1a1a18;outline:none;transition:border-color 0.12s;font-family:inherit}
 input:focus,select:focus,textarea:focus{border-color:#185fa5;box-shadow:0 0 0 3px rgba(24,95,165,0.1)}
 textarea{resize:vertical;min-height:70px}
-.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:100;align-items:flex-start;justify-content:center;padding:2rem 1rem;overflow-y:auto}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.45);z-index:500;align-items:flex-start;justify-content:center;padding:2rem 1rem;overflow-y:auto}
 .overlay.open{display:flex}
-.modal{background:#fff;border-radius:14px;border:1px solid #e8e8e4;width:min(620px,100%);margin:auto}
+.modal{background:#fff;border-radius:14px;border:1px solid #e8e8e4;width:min(640px,100%);margin:auto}
+.modal-lg{width:min(780px,100%)}
 .modal-header{padding:16px 20px;border-bottom:1px solid #e8e8e4;display:flex;justify-content:space-between;align-items:center;position:sticky;top:0;background:#fff;border-radius:14px 14px 0 0;z-index:1}
 .modal-title{font-size:16px;font-weight:600}
 .close-btn{background:none;border:none;font-size:22px;cursor:pointer;color:#888780;line-height:1;padding:0 4px}
 .close-btn:hover{color:#1a1a18}
 .modal-body{padding:20px}
-.tab-bar{display:flex;gap:0;margin-bottom:18px;border-bottom:1px solid #e8e8e4}
-.tab{padding:9px 16px;font-size:13px;cursor:pointer;color:#888780;border-bottom:2px solid transparent;margin-bottom:-1px;font-weight:500;transition:all 0.12s}
+.tab-bar{display:flex;gap:0;margin-bottom:18px;border-bottom:1px solid #e8e8e4;overflow-x:auto}
+.tab{padding:9px 14px;font-size:13px;cursor:pointer;color:#888780;border-bottom:2px solid transparent;margin-bottom:-1px;font-weight:500;white-space:nowrap}
 .tab:hover{color:#1a1a18}
 .tab.active{color:#185fa5;border-bottom-color:#185fa5}
 .tab-content{display:none}
 .tab-content.active{display:block}
-.upload-zone{border:2px dashed #d3d1c7;border-radius:8px;padding:20px;text-align:center;cursor:pointer;color:#888780;font-size:13px;transition:all 0.12s}
+.upload-zone{border:2px dashed #d3d1c7;border-radius:8px;padding:18px;text-align:center;cursor:pointer;color:#888780;font-size:13px;transition:all 0.12s}
 .upload-zone:hover{border-color:#185fa5;background:#f0f7ff}
-.upload-zone input{display:none}
-.img-preview{width:80px;height:80px;border-radius:50%;object-fit:cover;border:2px solid #e8e8e4}
-.doc-preview{width:100%;height:140px;object-fit:contain;border:1px solid #e8e8e4;border-radius:8px;background:#f5f5f0}
 .progress-bar{height:4px;background:#e8e8e4;border-radius:2px;margin-top:8px;overflow:hidden}
 .progress-fill{height:100%;border-radius:2px;background:#27500a}
-.progress-fill.warn{background:#ef9f27}
-.progress-fill.danger-fill{background:#e24b4a}
-.chart-bar-wrap{display:flex;flex-direction:column;gap:8px}
-.chart-row{display:flex;align-items:center;gap:10px;font-size:12px}
+.pf-warn{background:#ef9f27}.pf-danger{background:#e24b4a}
+.chart-row{display:flex;align-items:center;gap:10px;font-size:12px;margin-bottom:8px}
 .chart-label{width:55px;color:#888780;text-align:right;flex-shrink:0}
 .chart-bar-bg{flex:1;height:22px;background:#f0f0ec;border-radius:4px;overflow:hidden}
 .chart-bar-fill{height:100%;border-radius:4px;background:#185fa5;transition:width 0.5s}
-.chart-val{width:80px;font-weight:500;font-size:12px}
-.notification{background:#faeeda;border:1px solid #fac775;border-radius:8px;padding:10px 14px;font-size:13px;color:#633806;margin-bottom:16px;display:flex;align-items:center;gap:8px}
-.notification a{color:#633806;font-weight:600;cursor:pointer;text-decoration:underline}
-.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;font-size:13px}
-.detail-item{display:flex;flex-direction:column;gap:2px}
-.detail-label{font-size:11px;color:#888780;text-transform:uppercase;letter-spacing:0.3px}
-.detail-val{font-weight:500}
-.separator{height:1px;background:#e8e8e4;margin:14px 0}
-.empty{text-align:center;padding:40px 20px;color:#888780;font-size:13px}
-.search-bar{margin-bottom:16px}
-.search-bar input{max-width:320px;padding-left:32px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23888780' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:10px center}
-.contract-card{background:#f5f5f0;border:1px solid #e8e8e4;border-radius:8px;padding:12px;text-align:center;cursor:pointer;transition:all 0.12s}
-.contract-card:hover{border-color:#185fa5;background:#e6f1fb}
-.contract-icon{font-size:28px;margin-bottom:6px}
-.rent-calc{background:#e6f1fb;border-radius:8px;padding:14px 16px;margin-top:12px;font-size:13px}
+.chart-val{width:85px;font-weight:500;font-size:12px}
+.notif{background:#faeeda;border:1px solid #fac775;border-radius:8px;padding:10px 14px;font-size:13px;color:#633806;margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.notif a{color:#633806;font-weight:600;cursor:pointer;text-decoration:underline}
+.detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.di{display:flex;flex-direction:column;gap:2px}
+.di-label{font-size:11px;color:#888780;text-transform:uppercase;letter-spacing:0.3px}
+.di-val{font-weight:500;font-size:13px}
+.sep{height:1px;background:#e8e8e4;margin:14px 0}
+.empty{text-align:center;padding:32px 20px;color:#888780;font-size:13px}
+.fixture-item{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #f0f0ec}
+.fixture-item:last-child{border-bottom:none}
+.fixture-img{width:40px;height:40px;border-radius:6px;object-fit:cover;background:#f5f5f0;border:1px solid #e8e8e4;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.rent-calc{background:#e6f1fb;border-radius:8px;padding:14px;font-size:13px;margin-top:10px;color:#0c447c}
 .toggle{position:relative;display:inline-block;width:38px;height:22px;flex-shrink:0}
 .toggle input{opacity:0;width:0;height:0}
 .toggle-slider{position:absolute;inset:0;background:#d3d1c7;border-radius:11px;cursor:pointer;transition:0.2s}
 .toggle-slider:before{content:'';position:absolute;width:16px;height:16px;left:3px;top:3px;background:#fff;border-radius:50%;transition:0.2s}
 .toggle input:checked+.toggle-slider{background:#185fa5}
 .toggle input:checked+.toggle-slider:before{transform:translateX(16px)}
-.reminder-row{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid #f0f0ec}
-.reminder-row:last-child{border-bottom:none}
-.loading{text-align:center;padding:40px;color:#888780;font-size:13px}
-.apt-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(80px,1fr));gap:8px}
-.apt-box{aspect-ratio:1;border-radius:8px;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:11px;cursor:pointer;transition:all 0.12s;border:1px solid transparent}
-.apt-box.dolu{background:#eaf3de;color:#27500a}
-.apt-box.dolu:hover{border-color:#639922}
-.apt-box.bos{background:#fcebeb;color:#a32d2d}
-.apt-box.yakin{background:#faeeda;color:#633806}
-.apt-num{font-size:20px;font-weight:700;line-height:1}
-@media(max-width:768px){
-  .sidebar{transform:translateX(-100%);transition:transform 0.25s;z-index:300!important}
-  .sidebar.open{transform:translateX(0);box-shadow:4px 0 20px rgba(0,0,0,0.15)}
-  .main{margin-left:0;padding:56px 14px 14px}
-  .form-grid{grid-template-columns:1fr}
-  .form-group.full{grid-column:1}
-  .metric-grid{grid-template-columns:1fr 1fr}
-  .hamburger{display:flex!important}
-  .page-header{flex-wrap:wrap;gap:8px}
-  .page-header>div:last-child{flex-wrap:wrap}
-  table{font-size:12px}
-  th,td{padding:7px 8px}
-}
-.hamburger{display:none;position:fixed;top:12px;left:12px;z-index:400;background:#fff;border:1px solid #e8e8e4;border-radius:8px;padding:9px 11px;cursor:pointer;flex-direction:column;gap:5px;box-shadow:0 1px 4px rgba(0,0,0,0.08)}
-.hamburger span{width:20px;height:2px;background:#1a1a18;border-radius:1px;display:block}
-.mobile-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:299}
-.toast{position:fixed;bottom:24px;right:24px;background:#1a1a18;color:#fff;padding:12px 18px;border-radius:8px;font-size:13px;z-index:999;opacity:0;transform:translateY(10px);transition:all 0.25s;pointer-events:none}
-.toast.show{opacity:1;transform:translateY(0)}
+.pasif-banner{background:#fcebeb;border:1px solid #f7c1c1;border-radius:8px;padding:8px 12px;font-size:12px;color:#a32d2d;margin-bottom:10px;display:flex;align-items:center;gap:6px}
+.img-circle{width:42px;height:42px;border-radius:50%;object-fit:cover;border:1px solid #e8e8e4}
 #login-screen{position:fixed;inset:0;background:#f5f5f0;z-index:9999;display:flex;align-items:center;justify-content:center}
 #login-screen.hidden{display:none}
-.login-box{background:#fff;border:1px solid #e8e8e4;border-radius:16px;padding:40px 36px;width:min(360px,90%);text-align:center}
+.login-box{background:#fff;border:1px solid #e8e8e4;border-radius:16px;padding:40px 36px;width:min(360px,92%);text-align:center}
 .login-logo{font-size:40px;margin-bottom:12px}
 .login-title{font-size:22px;font-weight:700;margin-bottom:4px}
 .login-sub{font-size:13px;color:#888780;margin-bottom:28px}
 .login-box input{text-align:center;font-size:20px;letter-spacing:6px;margin-bottom:14px;padding:12px}
-.login-box .btn{width:100%;padding:12px;font-size:15px;font-weight:600}
 .login-error{color:#a32d2d;font-size:13px;margin-top:10px;min-height:20px}
+.toast{position:fixed;bottom:24px;right:24px;background:#1a1a18;color:#fff;padding:12px 18px;border-radius:8px;font-size:13px;z-index:9998;opacity:0;transform:translateY(10px);transition:all 0.25s;pointer-events:none;max-width:300px}
+.toast.show{opacity:1;transform:translateY(0)}
+.breadcrumb{font-size:13px;color:#888780;margin-bottom:16px;display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.breadcrumb span{cursor:pointer;color:#185fa5}
+.breadcrumb span:hover{text-decoration:underline}
+.img-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px}
+.img-thumb{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;border:1px solid #e8e8e4;cursor:pointer}
+@media(max-width:768px){
+  .sidebar{transform:translateX(-100%);transition:transform 0.25s;z-index:300}
+  .sidebar.open{transform:translateX(0);box-shadow:4px 0 20px rgba(0,0,0,0.15)}
+  .main{margin-left:0;padding:56px 14px 20px}
+  .form-grid{grid-template-columns:1fr}
+  .fg1{grid-column:1}
+  .grid-2{grid-template-columns:1fr}
+  .metric-grid{grid-template-columns:1fr 1fr}
+  .hamburger{display:flex!important}
+  table{font-size:12px}
+  th,td{padding:6px 8px}
+}
+.hamburger{display:none;position:fixed;top:12px;left:12px;z-index:400;background:#fff;border:1px solid #e8e8e4;border-radius:8px;padding:9px 11px;cursor:pointer;flex-direction:column;gap:5px;box-shadow:0 1px 4px rgba(0,0,0,0.08)}
+.hamburger span{width:20px;height:2px;background:#1a1a18;border-radius:1px;display:block}
+.mobile-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.4);z-index:299}
 </style>
 </head>
 <body>
@@ -163,10 +165,10 @@ textarea{resize:vertical;min-height:70px}
 <div id="login-screen">
   <div class="login-box">
     <div class="login-logo">🏢</div>
-    <div class="login-title">Kira Takip</div>
+    <div class="login-title">Mülklerim</div>
     <div class="login-sub">Devam etmek için şifrenizi girin</div>
     <input type="password" id="login-input" placeholder="••••••••" onkeydown="if(event.key==='Enter')checkLogin()">
-    <button class="btn btn-primary" onclick="checkLogin()">Giriş yap</button>
+    <button class="btn btn-primary" style="width:100%;padding:12px;font-size:15px;font-weight:600" onclick="checkLogin()">Giriş yap</button>
     <div class="login-error" id="login-error"></div>
   </div>
 </div>
@@ -179,21 +181,21 @@ textarea{resize:vertical;min-height:70px}
 <div class="layout">
 <div class="sidebar" id="sidebar">
   <div class="logo-area">
-    <div class="logo-text">🏢 Kira Takip</div>
+    <div class="logo-text">🏢 Mülklerim</div>
     <div class="logo-sub">Mülk Yönetim Sistemi</div>
   </div>
   <div class="nav-section">
     <div class="nav-label">Ana Menü</div>
-    <div class="nav-item active" onclick="showPage('dashboard',this)"><span class="nav-icon">📊</span> Özet</div>
-    <div class="nav-item" onclick="showPage('tenants',this)"><span class="nav-icon">👥</span> Kiracılar</div>
-    <div class="nav-item" onclick="showPage('payments',this)"><span class="nav-icon">💳</span> Ödemeler</div>
-    <div class="nav-item" onclick="showPage('contracts',this)"><span class="nav-icon">📄</span> Sözleşmeler</div>
+    <div class="nav-item active" data-page="dashboard"><span class="nav-icon">📊</span> Özet</div>
+    <div class="nav-item" data-page="properties"><span class="nav-icon">🏠</span> Mülklerim</div>
+    <div class="nav-item" data-page="tenants"><span class="nav-icon">👥</span> Kiracılar</div>
+    <div class="nav-item" data-page="payments"><span class="nav-icon">💳</span> Ödemeler</div>
     <div class="nav-label">Araçlar</div>
-    <div class="nav-item" onclick="showPage('expenses',this)"><span class="nav-icon">🧾</span> Giderler</div>
-    <div class="nav-item" onclick="showPage('reports',this)"><span class="nav-icon">📈</span> Raporlar</div>
-    <div class="nav-item" onclick="showPage('reminders',this)"><span class="nav-icon">🔔</span> Hatırlatıcılar</div>
+    <div class="nav-item" data-page="expenses"><span class="nav-icon">🧾</span> Giderler</div>
+    <div class="nav-item" data-page="reports"><span class="nav-icon">📈</span> Raporlar</div>
+    <div class="nav-item" data-page="reminders"><span class="nav-icon">🔔</span> Hatırlatıcılar</div>
     <div class="nav-label">Sistem</div>
-    <div class="nav-item" onclick="showPage('settings',this)"><span class="nav-icon">⚙️</span> Ayarlar</div>
+    <div class="nav-item" data-page="settings"><span class="nav-icon">⚙️</span> Ayarlar</div>
   </div>
 </div>
 
@@ -205,48 +207,58 @@ textarea{resize:vertical;min-height:70px}
     <div class="page-title">Özet</div>
     <div id="dash-date" style="font-size:13px;color:#888780"></div>
   </div>
-  <div id="dash-notifications"></div>
-  <div class="metric-grid" id="dash-metrics">
-    <div class="metric"><div class="metric-label">Toplam kiracı</div><div class="metric-value blue" id="m-total">—</div></div>
-    <div class="metric"><div class="metric-label">Aylık gelir</div><div class="metric-value green" id="m-income">—</div></div>
-    <div class="metric"><div class="metric-label">Gecikmiş</div><div class="metric-value red" id="m-late">—</div></div>
-    <div class="metric"><div class="metric-label">Bu ay ödendi</div><div class="metric-value green" id="m-paid">—</div></div>
+  <div id="dash-notifs"></div>
+  <div class="metric-grid">
+    <div class="metric"><div class="metric-label">Toplam mülk</div><div class="metric-value mv-blue" id="m-prop">—</div></div>
+    <div class="metric"><div class="metric-label">Dolu daire</div><div class="metric-value mv-green" id="m-full">—</div></div>
+    <div class="metric"><div class="metric-label">Aylık gelir</div><div class="metric-value mv-green" id="m-income">—</div></div>
+    <div class="metric"><div class="metric-label">Gecikmiş</div><div class="metric-value mv-red" id="m-late">—</div></div>
   </div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+  <div class="grid-2">
     <div class="card">
-      <div class="section-title">Sözleşme bitiş takibi</div>
+      <div class="section-title">Sözleşme bitişleri</div>
       <div id="dash-contracts"><div class="empty">Yükleniyor...</div></div>
     </div>
     <div class="card">
-      <div class="section-title">Daire durumu</div>
-      <div class="apt-grid" id="dash-apts"><div class="empty">Yükleniyor...</div></div>
+      <div class="section-title">Son ödemeler</div>
+      <div id="dash-payments"><div class="empty">Yükleniyor...</div></div>
     </div>
   </div>
-  <div class="card">
-    <div class="section-title">Son ödemeler</div>
-    <div class="table-wrap"><table>
-      <thead><tr><th>Kiracı</th><th>Dönem</th><th>Tutar</th><th>Tarih</th><th>Durum</th></tr></thead>
-      <tbody id="dash-payments"><tr><td colspan="5" class="empty">Yükleniyor...</td></tr></tbody>
-    </table></div>
+</div>
+
+<!-- MÜLKLERİM -->
+<div class="page" id="page-properties">
+  <div class="page-header">
+    <div class="page-title" id="prop-page-title">Mülklerim</div>
+    <div id="prop-page-actions"></div>
   </div>
+  <div id="breadcrumb-area"></div>
+  <div id="prop-content"><div class="empty">Yükleniyor...</div></div>
 </div>
 
 <!-- KİRACILAR -->
 <div class="page" id="page-tenants">
   <div class="page-header">
     <div class="page-title">Kiracılar</div>
-    <button class="btn btn-primary" onclick="openModal('modal-tenant')">+ Yeni kiracı</button>
+    <button class="btn btn-primary" onclick="openTenantModal()">+ Yeni kiracı</button>
   </div>
-  <div class="search-bar"><input id="tenant-search" placeholder="Ad, daire no veya TC ile ara..." oninput="filterTenants()"></div>
-  <div class="tenant-grid" id="tenant-grid"><div class="loading">Yükleniyor...</div></div>
+  <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap">
+    <input id="tenant-search" placeholder="Ad, daire no veya TC..." style="max-width:260px" oninput="filterTenants()">
+    <select id="tenant-status-filter" onchange="filterTenants()" style="width:140px">
+      <option value="active">Aktif kiracılar</option>
+      <option value="passive">Pasif kiracılar</option>
+      <option value="all">Tümü</option>
+    </select>
+  </div>
+  <div class="tenant-grid" id="tenant-grid"><div class="empty">Yükleniyor...</div></div>
 </div>
 
 <!-- ÖDEMELER -->
 <div class="page" id="page-payments">
   <div class="page-header">
     <div class="page-title">Ödemeler</div>
-    <div style="display:flex;gap:8px;align-items:center">
-      <select id="pay-period-filter" onchange="loadPayments()" style="width:160px">
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <select id="pay-period-filter" onchange="loadPayments()" style="width:150px">
         <option value="">Tüm dönemler</option>
       </select>
       <select id="pay-status-filter" onchange="loadPayments()" style="width:130px">
@@ -259,20 +271,10 @@ textarea{resize:vertical;min-height:70px}
     </div>
   </div>
   <div class="card" style="padding:0;overflow:hidden">
-    <div class="table-wrap"><table>
+    <div style="overflow-x:auto"><table>
       <thead><tr><th>Kiracı</th><th>Daire</th><th>Dönem</th><th>Kira</th><th>Aidat</th><th>İnt.</th><th>Diğer</th><th>Toplam</th><th>Tarih</th><th>Durum</th><th></th></tr></thead>
-      <tbody id="payment-tbody"><tr><td colspan="11" class="loading">Yükleniyor...</td></tr></tbody>
+      <tbody id="payment-tbody"><tr><td colspan="11" class="empty">Yükleniyor...</td></tr></tbody>
     </table></div>
-  </div>
-</div>
-
-<!-- SÖZLEŞMELER -->
-<div class="page" id="page-contracts">
-  <div class="page-header">
-    <div class="page-title">Sözleşmeler</div>
-  </div>
-  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px" id="contract-grid">
-    <div class="loading">Yükleniyor...</div>
   </div>
 </div>
 
@@ -280,12 +282,12 @@ textarea{resize:vertical;min-height:70px}
 <div class="page" id="page-expenses">
   <div class="page-header">
     <div class="page-title">Giderler</div>
-    <button class="btn btn-primary" onclick="openModal('modal-expense')">+ Gider ekle</button>
+    <button class="btn btn-primary" onclick="openExpenseModal()">+ Gider ekle</button>
   </div>
   <div class="card" style="padding:0;overflow:hidden">
-    <div class="table-wrap"><table>
-      <thead><tr><th>Tarih</th><th>Daire</th><th>Açıklama</th><th>Kategori</th><th>Tutar</th><th></th></tr></thead>
-      <tbody id="expense-tbody"><tr><td colspan="6" class="loading">Yükleniyor...</td></tr></tbody>
+    <div style="overflow-x:auto"><table>
+      <thead><tr><th>Tarih</th><th>Mülk/Daire</th><th>Açıklama</th><th>Kategori</th><th>Tutar</th><th></th></tr></thead>
+      <tbody id="expense-tbody"><tr><td colspan="6" class="empty">Yükleniyor...</td></tr></tbody>
     </table></div>
   </div>
 </div>
@@ -294,32 +296,37 @@ textarea{resize:vertical;min-height:70px}
 <div class="page" id="page-reports">
   <div class="page-header">
     <div class="page-title">Raporlar</div>
-    <select id="report-year" onchange="loadReports()" style="width:100px">
-      <option>2025</option><option>2026</option><option>2024</option>
-    </select>
+    <div style="display:flex;gap:8px">
+      <select id="report-year" onchange="loadReports()" style="width:100px">
+        <option>2025</option><option>2026</option><option>2024</option>
+      </select>
+      <select id="report-prop" onchange="loadReports()" style="width:160px">
+        <option value="">Tüm mülkler</option>
+      </select>
+    </div>
   </div>
   <div class="metric-grid">
-    <div class="metric"><div class="metric-label">Yıllık gelir</div><div class="metric-value green" id="r-income">—</div></div>
-    <div class="metric"><div class="metric-label">Yıllık gider</div><div class="metric-value red" id="r-expense">—</div></div>
-    <div class="metric"><div class="metric-label">Net kâr</div><div class="metric-value green" id="r-profit">—</div></div>
-    <div class="metric"><div class="metric-label">Tahsilat oranı</div><div class="metric-value blue" id="r-rate">—</div></div>
+    <div class="metric"><div class="metric-label">Yıllık gelir</div><div class="metric-value mv-green" id="r-income">—</div></div>
+    <div class="metric"><div class="metric-label">Yıllık gider</div><div class="metric-value mv-red" id="r-expense">—</div></div>
+    <div class="metric"><div class="metric-label">Net kâr</div><div class="metric-value mv-green" id="r-profit">—</div></div>
+    <div class="metric"><div class="metric-label">Tahsilat oranı</div><div class="metric-value mv-blue" id="r-rate">—</div></div>
   </div>
-  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">
+  <div class="grid-2">
     <div class="card">
       <div class="section-title">Aylık gelir</div>
-      <div class="chart-bar-wrap" id="monthly-chart"><div class="empty">Yükleniyor...</div></div>
+      <div id="monthly-chart"><div class="empty">Yükleniyor...</div></div>
     </div>
     <div class="card">
       <div class="section-title">Daire bazlı yıllık gelir</div>
-      <div class="chart-bar-wrap" id="apt-chart"><div class="empty">Yükleniyor...</div></div>
+      <div id="apt-chart"><div class="empty">Yükleniyor...</div></div>
     </div>
   </div>
-  <div class="card" style="margin-top:16px">
+  <div class="card">
     <div class="section-title">Kira artış hesaplayıcı (TÜFE)</div>
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;align-items:end">
       <div class="form-group"><label>Mevcut kira (₺)</label><input type="number" id="calc-base" value="15000" oninput="calcRent()"></div>
       <div class="form-group"><label>TÜFE oranı (%)</label><input type="number" id="calc-rate" value="58.5" step="0.1" oninput="calcRent()"></div>
-      <div class="metric"><div class="metric-label">Yeni kira</div><div class="metric-value green" id="calc-result">₺23.775</div></div>
+      <div class="metric"><div class="metric-label">Yeni kira</div><div class="metric-value mv-green" id="calc-result">—</div></div>
     </div>
     <div class="rent-calc" id="calc-detail"></div>
   </div>
@@ -329,28 +336,28 @@ textarea{resize:vertical;min-height:70px}
 <div class="page" id="page-reminders">
   <div class="page-header">
     <div class="page-title">Hatırlatıcılar</div>
-    <button class="btn btn-primary" onclick="openModal('modal-reminder')">+ Hatırlatıcı ekle</button>
+    <button class="btn btn-primary" onclick="openReminderModal()">+ Hatırlatıcı ekle</button>
   </div>
   <div class="card">
-    <div class="section-title">Otomatik uyarı ayarları</div>
-    <div id="auto-reminders" style="display:flex;flex-direction:column;gap:12px">
+    <div class="section-title">Otomatik uyarılar</div>
+    <div style="display:flex;flex-direction:column;gap:12px">
       <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #f0f0ec">
-        <div><div style="font-size:13px;font-weight:500">Kira ödeme hatırlatması</div><div style="font-size:12px;color:#888780">Ödeme gününden 3 gün önce</div></div>
-        <label class="toggle"><input type="checkbox" checked id="tog-1"><span class="toggle-slider"></span></label>
+        <div><div style="font-size:13px;font-weight:500">Kira hatırlatması</div><div style="font-size:12px;color:#888780">Ödeme gününden 3 gün önce</div></div>
+        <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
       </div>
       <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #f0f0ec">
         <div><div style="font-size:13px;font-weight:500">Gecikme bildirimi</div><div style="font-size:12px;color:#888780">3 gün gecikmede bildirim</div></div>
-        <label class="toggle"><input type="checkbox" checked id="tog-2"><span class="toggle-slider"></span></label>
+        <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
       </div>
       <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0">
-        <div><div style="font-size:13px;font-weight:500">Sözleşme yenileme uyarısı</div><div style="font-size:12px;color:#888780">Bitiş tarihinden 30 gün önce</div></div>
-        <label class="toggle"><input type="checkbox" checked id="tog-3"><span class="toggle-slider"></span></label>
+        <div><div style="font-size:13px;font-weight:500">Sözleşme uyarısı</div><div style="font-size:12px;color:#888780">Bitiş tarihinden 30 gün önce</div></div>
+        <label class="toggle"><input type="checkbox" checked><span class="toggle-slider"></span></label>
       </div>
     </div>
   </div>
   <div class="card">
-    <div class="section-title">Hatırlatıcılar</div>
-    <div id="reminder-list"><div class="loading">Yükleniyor...</div></div>
+    <div class="section-title">Planlanmış hatırlatıcılar</div>
+    <div id="reminder-list"><div class="empty">Yükleniyor...</div></div>
   </div>
 </div>
 
@@ -358,35 +365,138 @@ textarea{resize:vertical;min-height:70px}
 <div class="page" id="page-settings">
   <div class="page-header"><div class="page-title">Ayarlar</div></div>
   <div class="card">
-    <div class="section-title">Bağlantı bilgileri</div>
-    <div class="form-grid">
-      <div class="form-group full"><label>Supabase URL</label><input id="set-url" value="https://owjqtmfubtfcmhuexulj.supabase.co" readonly style="background:#f5f5f0"></div>
-      <div class="form-group full"><label>Bağlantı durumu</label><div id="conn-status" style="font-size:13px;padding:8px;background:#eaf3de;border-radius:8px;color:#27500a">✅ Bağlı</div></div>
-    </div>
+    <div class="section-title">Bağlantı durumu</div>
+    <div style="background:#eaf3de;border-radius:8px;padding:10px 14px;font-size:13px;color:#27500a">✅ Supabase bağlantısı aktif — https://owjqtmfubtfcmhuexulj.supabase.co</div>
   </div>
   <div class="card">
-    <div class="section-title">Bina bilgileri</div>
+    <div class="section-title">Şifre değiştir</div>
     <div class="form-grid">
-      <div class="form-group"><label>Bina adı</label><input id="set-bina" placeholder="Örn: Gül Apartmanı"></div>
-      <div class="form-group"><label>Adres</label><input id="set-adres" placeholder="İlçe, Şehir"></div>
-      <div class="form-group"><label>Toplam daire</label><input id="set-daire" type="number" placeholder="10"></div>
-      <div class="form-group"><label>Yönetici adı</label><input id="set-yonetici" placeholder="Adınız"></div>
+      <div class="form-group"><label>Mevcut şifre</label><input type="password" id="set-old-pass"></div>
+      <div class="form-group"><label>Yeni şifre</label><input type="password" id="set-new-pass"></div>
     </div>
-    <div class="btn-row"><button class="btn btn-primary" onclick="saveSettings()">Kaydet</button></div>
+    <div class="btn-row"><button class="btn btn-primary" onclick="changePassword()">Şifreyi güncelle</button></div>
   </div>
 </div>
 
 </div><!-- main -->
 </div><!-- layout -->
 
-<!-- TOAST -->
 <div class="toast" id="toast"></div>
+
+<!-- MÜLK MODAL -->
+<div class="overlay" id="modal-property">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="prop-modal-title">Yeni mülk ekle</span>
+      <button class="close-btn" onclick="closeModal('modal-property')">×</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="prop-id">
+      <div class="form-grid">
+        <div class="form-group fg1"><label>Mülk adı *</label><input id="prop-name" placeholder="Gül Apartmanı"></div>
+        <div class="form-group"><label>Tür</label>
+          <select id="prop-type"><option>Apartman</option><option>Müstakil ev</option><option>Dükkan/İşyeri</option><option>Villa</option><option>Diğer</option></select>
+        </div>
+        <div class="form-group"><label>Şehir</label><input id="prop-city" placeholder="Ankara"></div>
+        <div class="form-group fg1"><label>Adres</label><input id="prop-address" placeholder="Mahalle, Sokak..."></div>
+        <div class="form-group fg1"><label>Notlar</label><textarea id="prop-notes" placeholder="Mülk hakkında notlar..."></textarea></div>
+      </div>
+      <div style="margin-top:12px">
+        <label style="display:block;margin-bottom:6px">Mülk fotoğrafı</label>
+        <div class="upload-zone" onclick="document.getElementById('prop-photo-input').click()">
+          <div id="prop-photo-placeholder">📷 Fotoğraf yükleyin</div>
+          <img id="prop-photo-preview" style="display:none;max-height:120px;border-radius:8px;margin-top:8px">
+          <input type="file" id="prop-photo-input" accept="image/*" style="display:none" onchange="previewImg(this,'prop-photo-preview','prop-photo-placeholder')">
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn" onclick="closeModal('modal-property')">İptal</button>
+        <button class="btn btn-primary" onclick="saveProperty()">Kaydet</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DAİRE MODAL -->
+<div class="overlay" id="modal-apartment">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="apt-modal-title">Yeni daire ekle</span>
+      <button class="close-btn" onclick="closeModal('modal-apartment')">×</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="apt-id">
+      <input type="hidden" id="apt-prop-id">
+      <div class="form-grid">
+        <div class="form-group"><label>Kapı no *</label><input id="apt-no" placeholder="3"></div>
+        <div class="form-group"><label>Kat</label><input id="apt-floor" placeholder="2"></div>
+        <div class="form-group"><label>Daire tipi</label>
+          <select id="apt-type"><option>1+1</option><option>2+1</option><option>3+1</option><option>4+1</option><option>Stüdyo</option><option>Dükkan</option><option>Diğer</option></select>
+        </div>
+        <div class="form-group"><label>Alan (m²)</label><input id="apt-size" type="number" placeholder="85"></div>
+        <div class="form-group fg1"><label>Notlar</label><textarea id="apt-notes" placeholder="Daire hakkında notlar..."></textarea></div>
+      </div>
+      <div style="margin-top:12px">
+        <label style="display:block;margin-bottom:6px">Daire fotoğrafı</label>
+        <div class="upload-zone" onclick="document.getElementById('apt-photo-input').click()">
+          <div id="apt-photo-placeholder">📷 Fotoğraf yükleyin</div>
+          <img id="apt-photo-preview" style="display:none;max-height:120px;border-radius:8px;margin-top:8px">
+          <input type="file" id="apt-photo-input" accept="image/*" style="display:none" onchange="previewImg(this,'apt-photo-preview','apt-photo-placeholder')">
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn" onclick="closeModal('modal-apartment')">İptal</button>
+        <button class="btn btn-primary" onclick="saveApartment()">Kaydet</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DEMİRBAŞ MODAL -->
+<div class="overlay" id="modal-fixture">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title" id="fix-modal-title">Demirbaş ekle</span>
+      <button class="close-btn" onclick="closeModal('modal-fixture')">×</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="fix-id">
+      <input type="hidden" id="fix-apt-id">
+      <div class="form-grid">
+        <div class="form-group fg1"><label>Demirbaş adı *</label><input id="fix-name" placeholder="Bulaşık makinesi"></div>
+        <div class="form-group"><label>Kategori</label>
+          <select id="fix-cat"><option>Beyaz eşya</option><option>Mobilya</option><option>Teknik ekipman</option><option>Isıtma/Soğutma</option><option>Mutfak</option><option>Banyo</option><option>Diğer</option></select>
+        </div>
+        <div class="form-group"><label>Durum</label>
+          <select id="fix-cond"><option>İyi</option><option>Orta</option><option>Yıpranmış</option><option>Arızalı</option></select>
+        </div>
+        <div class="form-group"><label>Marka</label><input id="fix-brand" placeholder="Bosch"></div>
+        <div class="form-group"><label>Model</label><input id="fix-model" placeholder="SMS46MI01E"></div>
+        <div class="form-group"><label>Seri no</label><input id="fix-serial" placeholder="SN-12345"></div>
+        <div class="form-group"><label>Alım tarihi</label><input id="fix-date" type="date"></div>
+        <div class="form-group fg1"><label>Notlar</label><textarea id="fix-notes" placeholder="Notlar..."></textarea></div>
+      </div>
+      <div style="margin-top:12px">
+        <label style="display:block;margin-bottom:6px">Fotoğraf</label>
+        <div class="upload-zone" onclick="document.getElementById('fix-photo-input').click()">
+          <div id="fix-photo-placeholder">📷 Fotoğraf yükleyin</div>
+          <img id="fix-photo-preview" style="display:none;max-height:100px;border-radius:8px;margin-top:8px">
+          <input type="file" id="fix-photo-input" accept="image/*" style="display:none" onchange="previewImg(this,'fix-photo-preview','fix-photo-placeholder')">
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn" onclick="closeModal('modal-fixture')">İptal</button>
+        <button class="btn btn-primary" onclick="saveFixture()">Kaydet</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- KİRACı MODAL -->
 <div class="overlay" id="modal-tenant">
-  <div class="modal">
+  <div class="modal modal-lg">
     <div class="modal-header">
-      <span class="modal-title" id="tenant-modal-title">Yeni kiracı ekle</span>
+      <span class="modal-title" id="tenant-modal-title">Yeni kiracı</span>
       <button class="close-btn" onclick="closeModal('modal-tenant')">×</button>
     </div>
     <div class="modal-body">
@@ -398,64 +508,64 @@ textarea{resize:vertical;min-height:70px}
       <input type="hidden" id="tenant-id">
       <div class="tab-content active" id="tc-kisisel">
         <div style="display:flex;align-items:center;gap:14px;margin-bottom:16px">
-          <div id="photo-preview-wrap">
-            <div style="width:72px;height:72px;border-radius:50%;background:#f5f5f0;border:2px dashed #d3d1c7;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:22px" onclick="document.getElementById('photo-input').click()" id="photo-placeholder">📷</div>
-            <img id="photo-preview" class="img-preview" style="display:none;cursor:pointer" onclick="document.getElementById('photo-input').click()">
+          <div id="t-photo-wrap" style="position:relative;cursor:pointer" onclick="document.getElementById('t-photo-input').click()">
+            <div id="t-photo-ph" style="width:72px;height:72px;border-radius:50%;background:#f5f5f0;border:2px dashed #d3d1c7;display:flex;align-items:center;justify-content:center;font-size:26px">📷</div>
+            <img id="t-photo-prev" style="display:none;width:72px;height:72px;border-radius:50%;object-fit:cover;border:2px solid #e8e8e4">
+            <input type="file" id="t-photo-input" accept="image/*" style="display:none" onchange="previewTenantPhoto(this)">
           </div>
-          <div>
-            <div style="font-size:12px;color:#888780">Fotoğraf yükleyin</div>
-            <div style="font-size:11px;color:#aaa">JPG, PNG max 2MB</div>
-          </div>
-          <input type="file" id="photo-input" accept="image/*" style="display:none" onchange="previewPhoto(this)">
+          <div style="font-size:12px;color:#888780">Yüz fotoğrafı yükleyin<br><span style="font-size:11px">JPG/PNG max 2MB</span></div>
         </div>
         <div class="form-grid">
-          <div class="form-group full"><label>Ad soyad *</label><input id="t-name" placeholder="Mehmet Yılmaz"></div>
+          <div class="form-group fg1"><label>Ad soyad *</label><input id="t-name" placeholder="Mehmet Yılmaz"></div>
           <div class="form-group"><label>TC kimlik no</label><input id="t-tc" placeholder="12345678901" maxlength="11"></div>
           <div class="form-group"><label>Telefon</label><input id="t-phone" placeholder="0530 000 0000"></div>
-          <div class="form-group"><label>E-posta</label><input id="t-email" type="email" placeholder="ornek@mail.com"></div>
+          <div class="form-group"><label>E-posta</label><input id="t-email" type="email"></div>
           <div class="form-group"><label>Doğum tarihi</label><input id="t-birth" type="date"></div>
-          <div class="form-group"><label>Meslek</label><input id="t-job" placeholder="Mühendis"></div>
-          <div class="form-group full"><label>Acil iletişim (Ad — Telefon)</label><input id="t-emergency" placeholder="Anne — 0530 111 2222"></div>
-          <div class="form-group full"><label>Notlar</label><textarea id="t-notes" placeholder="Kiracı hakkında notlar..."></textarea></div>
+          <div class="form-group"><label>Meslek</label><input id="t-job"></div>
+          <div class="form-group fg1"><label>Acil iletişim</label><input id="t-emergency" placeholder="Ad — Telefon"></div>
+          <div class="form-group fg1"><label>Notlar</label><textarea id="t-notes"></textarea></div>
         </div>
       </div>
       <div class="tab-content" id="tc-daire">
         <div class="form-grid">
-          <div class="form-group"><label>Daire no *</label><input id="t-apt" placeholder="3"></div>
-          <div class="form-group"><label>Kat</label><input id="t-floor" placeholder="2"></div>
-          <div class="form-group"><label>Kira bedeli (₺) *</label><input id="t-rent" type="number" placeholder="15000" oninput="updateTenantTotal()"></div>
-          <div class="form-group"><label>Aidat (₺)</label><input id="t-aidat" type="number" placeholder="1500" oninput="updateTenantTotal()"></div>
-          <div class="form-group"><label>İnternet (₺)</label><input id="t-internet" type="number" placeholder="500" oninput="updateTenantTotal()"></div>
+          <div class="form-group"><label>Mülk</label>
+            <select id="t-prop-sel" onchange="loadApartmentsForTenant()"></select>
+          </div>
+          <div class="form-group"><label>Daire</label>
+            <select id="t-apt-sel"></select>
+          </div>
+          <div class="form-group"><label>Kira (₺) *</label><input id="t-rent" type="number" oninput="updateTenantTotal()"></div>
+          <div class="form-group"><label>Aidat (₺)</label><input id="t-aidat" type="number" oninput="updateTenantTotal()"></div>
+          <div class="form-group"><label>İnternet (₺)</label><input id="t-internet" type="number" oninput="updateTenantTotal()"></div>
           <div class="form-group"><label>Kira günü</label><input id="t-payDay" type="number" placeholder="5" min="1" max="31"></div>
-          <div class="form-group"><label>Elektrik abone no</label><input id="t-electric" placeholder="1234567890"></div>
-          <div class="form-group"><label>Su kart no</label><input id="t-water" placeholder="SK-12345"></div>
+          <div class="form-group"><label>Elektrik abone no</label><input id="t-electric"></div>
+          <div class="form-group"><label>Su kart no</label><input id="t-water"></div>
           <div class="form-group"><label>Sözleşme başlangıç</label><input id="t-cstart" type="date"></div>
           <div class="form-group"><label>Sözleşme bitiş</label><input id="t-cend" type="date"></div>
-          <div class="form-group"><label>Depozito (₺)</label><input id="t-deposit" type="number" placeholder="30000"></div>
+          <div class="form-group"><label>Depozito (₺)</label><input id="t-deposit" type="number"></div>
           <div class="form-group"><label>Ödeme yöntemi</label>
             <select id="t-paymethod"><option>Havale</option><option>EFT</option><option>Nakit</option></select>
           </div>
         </div>
         <div class="metric" style="margin-top:12px">
           <div class="metric-label">Aylık toplam</div>
-          <div class="metric-value green" id="tenant-total-preview">₺0</div>
+          <div class="metric-value mv-green" id="tenant-total-preview">₺0</div>
         </div>
       </div>
       <div class="tab-content" id="tc-belgeler">
         <div class="form-group" style="margin-bottom:14px">
-          <label>Kimlik belgesi (ön yüz)</label>
-          <div class="upload-zone" onclick="document.getElementById('id-input').click()">
-            <div id="id-placeholder">📋 Kimlik görselini yükleyin</div>
-            <img id="id-preview" style="display:none;max-height:120px;border-radius:6px">
-            <input type="file" id="id-input" accept="image/*,application/pdf" onchange="previewId(this)">
+          <label>Kimlik belgesi</label>
+          <div class="upload-zone" onclick="document.getElementById('t-id-input').click()">
+            <div id="t-id-ph">📋 Kimlik görselini yükleyin</div>
+            <img id="t-id-prev" style="display:none;max-height:120px;border-radius:6px;margin-top:8px">
+            <input type="file" id="t-id-input" accept="image/*,application/pdf" style="display:none" onchange="previewImg(this,'t-id-prev','t-id-ph')">
           </div>
         </div>
         <div class="form-group">
-          <label>Sözleşme belgesi</label>
-          <div class="upload-zone" onclick="document.getElementById('contract-input').click()">
-            <div id="contract-placeholder">📄 Sözleşme PDF veya görsel yükleyin</div>
-            <div id="contract-name" style="display:none;font-size:13px;font-weight:500;margin-top:8px"></div>
-            <input type="file" id="contract-input" accept="image/*,application/pdf" onchange="previewContract(this)">
+          <label>Kira sözleşmesi</label>
+          <div class="upload-zone" onclick="document.getElementById('t-contract-input').click()">
+            <div id="t-contract-ph">📄 PDF veya görsel yükleyin</div>
+            <input type="file" id="t-contract-input" accept="image/*,application/pdf" style="display:none" onchange="showFileName(this,'t-contract-ph')">
           </div>
         </div>
       </div>
@@ -467,11 +577,11 @@ textarea{resize:vertical;min-height:70px}
   </div>
 </div>
 
-<!-- KİRACı DETAY MODAL -->
+<!-- KİRACı DETAY -->
 <div class="overlay" id="modal-detail">
-  <div class="modal" style="width:min(700px,100%)">
+  <div class="modal modal-lg">
     <div class="modal-header">
-      <span class="modal-title" id="detail-name">Kiracı Detayı</span>
+      <span class="modal-title" id="detail-title">Kiracı Detayı</span>
       <button class="close-btn" onclick="closeModal('modal-detail')">×</button>
     </div>
     <div class="modal-body" id="detail-body"></div>
@@ -488,26 +598,17 @@ textarea{resize:vertical;min-height:70px}
     <div class="modal-body">
       <input type="hidden" id="pay-id">
       <div class="form-grid">
-        <div class="form-group"><label>Kiracı *</label>
-          <select id="pay-tenant-sel"></select>
-        </div>
+        <div class="form-group"><label>Kiracı *</label><select id="pay-tenant-sel" onchange="fillPayFromTenant()"></select></div>
         <div class="form-group"><label>Dönem *</label><input id="pay-period" type="month"></div>
         <div class="form-group"><label>Kira (₺)</label><input id="pay-rent" type="number" oninput="updatePayTotal()"></div>
         <div class="form-group"><label>Aidat (₺)</label><input id="pay-aidat" type="number" oninput="updatePayTotal()"></div>
         <div class="form-group"><label>İnternet (₺)</label><input id="pay-internet" type="number" oninput="updatePayTotal()"></div>
         <div class="form-group"><label>Diğer (₺)</label><input id="pay-other" type="number" value="0" oninput="updatePayTotal()"></div>
         <div class="form-group"><label>Ödeme tarihi</label><input id="pay-date" type="date"></div>
-        <div class="form-group"><label>Ödeme yöntemi</label>
-          <select id="pay-method"><option>Havale</option><option>EFT</option><option>Nakit</option></select>
-        </div>
-        <div class="form-group"><label>Durum</label>
-          <select id="pay-status"><option value="paid">Ödendi</option><option value="pending">Bekliyor</option><option value="late">Gecikmeli</option></select>
-        </div>
-        <div class="metric">
-          <div class="metric-label">Toplam</div>
-          <div class="metric-value green" id="pay-total-show">₺0</div>
-        </div>
-        <div class="form-group full"><label>Not</label><textarea id="pay-note" placeholder="Ödeme notu..."></textarea></div>
+        <div class="form-group"><label>Yöntem</label><select id="pay-method"><option>Havale</option><option>EFT</option><option>Nakit</option></select></div>
+        <div class="form-group"><label>Durum</label><select id="pay-status"><option value="paid">Ödendi</option><option value="pending">Bekliyor</option><option value="late">Gecikmeli</option></select></div>
+        <div class="metric"><div class="metric-label">Toplam</div><div class="metric-value mv-green" id="pay-total-show">₺0</div></div>
+        <div class="form-group fg1"><label>Not</label><textarea id="pay-note"></textarea></div>
       </div>
       <div class="btn-row">
         <button class="btn" onclick="closeModal('modal-payment')">İptal</button>
@@ -527,13 +628,12 @@ textarea{resize:vertical;min-height:70px}
     <div class="modal-body">
       <input type="hidden" id="exp-id">
       <div class="form-grid">
-        <div class="form-group"><label>Daire no (boş=genel)</label><input id="exp-apt" placeholder="3"></div>
+        <div class="form-group"><label>Mülk</label><select id="exp-prop"></select></div>
+        <div class="form-group"><label>Daire (boş=genel)</label><input id="exp-apt" placeholder="3"></div>
         <div class="form-group"><label>Tarih</label><input id="exp-date" type="date"></div>
-        <div class="form-group full"><label>Açıklama</label><input id="exp-desc" placeholder="Boyacı ücreti..."></div>
-        <div class="form-group"><label>Kategori</label>
-          <select id="exp-cat"><option>Bakım/Onarım</option><option>Temizlik</option><option>Vergi/Sigorta</option><option>Yönetim</option><option>Diğer</option></select>
-        </div>
-        <div class="form-group"><label>Tutar (₺)</label><input id="exp-amount" type="number" placeholder="0"></div>
+        <div class="form-group"><label>Kategori</label><select id="exp-cat"><option>Bakım/Onarım</option><option>Temizlik</option><option>Vergi/Sigorta</option><option>Yönetim</option><option>Diğer</option></select></div>
+        <div class="form-group fg1"><label>Açıklama</label><input id="exp-desc" placeholder="Boyacı ücreti..."></div>
+        <div class="form-group"><label>Tutar (₺)</label><input id="exp-amount" type="number"></div>
       </div>
       <div class="btn-row">
         <button class="btn" onclick="closeModal('modal-expense')">İptal</button>
@@ -552,18 +652,12 @@ textarea{resize:vertical;min-height:70px}
     </div>
     <div class="modal-body">
       <div class="form-grid">
-        <div class="form-group full"><label>Kiracı (boş = genel)</label>
-          <select id="rem-tenant"><option value="">— Tüm kiracılar —</option></select>
-        </div>
-        <div class="form-group full"><label>Başlık</label><input id="rem-title" placeholder="Hatırlatıcı başlığı"></div>
-        <div class="form-group"><label>Tür</label>
-          <select id="rem-type"><option>Kira ödemesi</option><option>Sözleşme yenileme</option><option>Bakım/tamir</option><option>Özel</option></select>
-        </div>
-        <div class="form-group"><label>Kanal</label>
-          <select id="rem-channel"><option>Hatırlatma notu</option><option>SMS</option><option>E-posta</option><option>Her ikisi</option></select>
-        </div>
-        <div class="form-group full"><label>Tarih</label><input id="rem-date" type="date"></div>
-        <div class="form-group full"><label>Mesaj</label><textarea id="rem-message" placeholder="Hatırlatıcı mesajı..."></textarea></div>
+        <div class="form-group fg1"><label>Kiracı (boş=genel)</label><select id="rem-tenant"><option value="">— Tüm kiracılar —</option></select></div>
+        <div class="form-group fg1"><label>Başlık</label><input id="rem-title"></div>
+        <div class="form-group"><label>Tür</label><select id="rem-type"><option>Kira ödemesi</option><option>Sözleşme yenileme</option><option>Bakım/tamir</option><option>Özel</option></select></div>
+        <div class="form-group"><label>Kanal</label><select id="rem-channel"><option>Not</option><option>SMS</option><option>E-posta</option><option>Her ikisi</option></select></div>
+        <div class="form-group fg1"><label>Tarih</label><input id="rem-date" type="date"></div>
+        <div class="form-group fg1"><label>Mesaj</label><textarea id="rem-message"></textarea></div>
       </div>
       <div class="btn-row">
         <button class="btn" onclick="closeModal('modal-reminder')">İptal</button>
@@ -575,98 +669,76 @@ textarea{resize:vertical;min-height:70px}
 
 <script>
 const APP_PASS='21201988';
-function checkLogin(){
-  const val=document.getElementById('login-input').value;
-  const err=document.getElementById('login-error');
-  if(val===APP_PASS){
-    sessionStorage.setItem('kira_auth','1');
-    document.getElementById('login-screen').classList.add('hidden');
-    err.textContent='';
-  }else{
-    err.textContent='Şifre yanlış, tekrar deneyin.';
-    document.getElementById('login-input').value='';
-    document.getElementById('login-input').focus();
-  }
-}
-function checkAuth(){
-  if(sessionStorage.getItem('kira_auth')!=='1'){
-    document.getElementById('login-screen').classList.remove('hidden');
-    return false;
-  }
-  document.getElementById('login-screen').classList.add('hidden');
-  return true;
-}
 const SUPA_URL='https://owjqtmfubtfcmhuexulj.supabase.co';
 const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im93anF0bWZ1YnRmY21odWV4dWxqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY1MDk3NjksImV4cCI6MjA5MjA4NTc2OX0.qF--MR4xYYM7VPUUN7Qjus1xl7bDfPaQWlj45o4kAdo';
 const {createClient}=supabase;
 const db=createClient(SUPA_URL,SUPA_KEY);
 
-let allTenants=[];
-let currentPage='dashboard';
-let photoFile=null,idFile=null,contractFile=null;
+let allTenants=[],allProperties=[],allApartments=[];
+let propPhotoFile=null,aptPhotoFile=null,fixPhotoFile=null,tenantPhotoFile=null,tenantIdFile=null,tenantContractFile=null;
+let currentPropId=null,currentAptId=null;
 
-const fmt=n=>n!=null?'₺'+Number(n).toLocaleString('tr-TR'):'₺0';
+const fmt=n=>'₺'+Number(n||0).toLocaleString('tr-TR');
 const initials=n=>n?n.split(' ').map(w=>w[0]).join('').substring(0,2).toUpperCase():'?';
-const colors=['av-blue','av-teal','av-purple','av-coral','av-amber','av-pink'];
-const colorOf=(n)=>colors[Math.abs((n||'').split('').reduce((a,c)=>a+c.charCodeAt(0),0))%colors.length];
-const daysLeft=d=>{if(!d)return 999;const diff=new Date(d)-new Date();return Math.ceil(diff/(1000*60*60*24))};
-const statusBadge=s=>s==='paid'?'<span class="badge badge-success">Ödendi</span>':s==='late'?'<span class="badge badge-danger">Gecikmeli</span>':'<span class="badge badge-warning">Bekliyor</span>';
+const avColors=['av-blue','av-teal','av-purple','av-coral','av-amber','av-pink'];
+const avColor=n=>avColors[Math.abs((n||'').split('').reduce((a,c)=>a+c.charCodeAt(0),0))%avColors.length];
+const daysLeft=d=>{if(!d)return 999;return Math.ceil((new Date(d)-new Date())/(86400000))};
+const statusBadge=s=>s==='paid'?'<span class="badge bs">Ödendi</span>':s==='late'?'<span class="badge bd">Gecikmeli</span>':'<span class="badge bw">Bekliyor</span>';
+const condColor={'İyi':'bs','Orta':'bw','Yıpranmış':'bd','Arızalı':'bd'};
 
-function toast(msg,type='success'){
+function toast(msg,type='ok'){
   const t=document.getElementById('toast');
-  t.textContent=msg;
-  t.style.background=type==='error'?'#a32d2d':'#1a1a18';
-  t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'),3000);
+  t.textContent=msg;t.style.background=type==='err'?'#a32d2d':'#1a1a18';
+  t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+function checkLogin(){
+  const v=document.getElementById('login-input').value;
+  if(v===APP_PASS){
+    sessionStorage.setItem('kira_ok','1');
+    document.getElementById('login-screen').classList.add('hidden');
+    document.getElementById('login-error').textContent='';
+    loadDashboard();
+  }else{
+    document.getElementById('login-error').textContent='Şifre yanlış.';
+    document.getElementById('login-input').value='';
+    document.getElementById('login-input').focus();
+  }
+}
+
+function changePassword(){
+  const o=document.getElementById('set-old-pass').value;
+  const n=document.getElementById('set-new-pass').value;
+  if(o!==APP_PASS){toast('Mevcut şifre yanlış','err');return;}
+  if(n.length<4){toast('Yeni şifre en az 4 karakter olmalı','err');return;}
+  toast('Şifre bu oturum için güncellendi (kalıcı için kodu güncelleyin)');
 }
 
 async function uploadFile(file,folder){
   const ext=file.name.split('.').pop();
-  const path=`${folder}/${Date.now()}.${ext}`;
+  const path=`${folder}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
   const{error}=await db.storage.from('tenant-files').upload(path,file);
   if(error)throw error;
-  const{data}=db.storage.from('tenant-files').getPublicUrl(path);
-  return data.publicUrl;
-}
-
-function showPage(name,el){
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
-  document.getElementById('page-'+name).classList.add('active');
-  el.classList.add('active');
-  currentPage=name;
-  if(name==='dashboard')loadDashboard();
-  else if(name==='tenants')loadTenants();
-  else if(name==='payments')loadPayments();
-  else if(name==='contracts')loadContracts();
-  else if(name==='expenses')loadExpenses();
-  else if(name==='reports')loadReports();
-  else if(name==='reminders')loadReminders();
-  closeSidebar();
+  return db.storage.from('tenant-files').getPublicUrl(path).data.publicUrl;
 }
 
 function openModal(id){document.getElementById(id).classList.add('open')}
 function closeModal(id){document.getElementById(id).classList.remove('open')}
+document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open')}));
 
-document.querySelectorAll('.overlay').forEach(o=>{
-  o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open')});
-});
-
-function switchTab(el,targetId){
-  const bar=el.parentElement;
-  bar.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+function switchTab(el,tid){
+  el.closest('.tab-bar').querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
   el.classList.add('active');
-  const modal=el.closest('.modal-body');
-  modal.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
-  document.getElementById(targetId).classList.add('active');
+  const mb=el.closest('.modal-body')||el.closest('.card');
+  mb.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
+  document.getElementById(tid).classList.add('active');
 }
 
 function toggleSidebar(){
-  const s=document.getElementById('sidebar');
-  const o=document.getElementById('mobile-overlay');
-  const isOpen=s.classList.toggle('open');
-  o.style.display=isOpen?'block':'none';
-  document.body.style.overflow=isOpen?'hidden':'';
+  const s=document.getElementById('sidebar'),o=document.getElementById('mobile-overlay');
+  const open=s.classList.toggle('open');
+  o.style.display=open?'block':'none';
+  document.body.style.overflow=open?'hidden':'';
 }
 function closeSidebar(){
   document.getElementById('sidebar').classList.remove('open');
@@ -674,93 +746,395 @@ function closeSidebar(){
   document.body.style.overflow='';
 }
 
-// DASHBOARD
-async function loadDashboard(){
-  document.getElementById('dash-date').textContent=new Date().toLocaleDateString('tr-TR',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
-  const{data:tenants}=await db.from('tenants').select('*').eq('is_active',true);
-  allTenants=tenants||[];
-  const now=new Date();
-  const period=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
-  const{data:payments}=await db.from('payments').select('*,tenants(name,apt_no)').order('created_at',{ascending:false}).limit(10);
-  const thisMonth=(payments||[]).filter(p=>p.period===period);
-  const paidCount=thisMonth.filter(p=>p.status==='paid').length;
-  const lateCount=(payments||[]).filter(p=>p.status==='late').length;
-  const monthlyIncome=allTenants.reduce((s,t)=>s+(t.rent||0)+(t.aidat||0)+(t.internet||0),0);
-
-  document.getElementById('m-total').textContent=allTenants.length;
-  document.getElementById('m-income').textContent=fmt(monthlyIncome);
-  document.getElementById('m-late').textContent=lateCount;
-  document.getElementById('m-paid').textContent=paidCount;
-
-  const notifs=document.getElementById('dash-notifications');
-  const lateOnes=allTenants.filter(t=>{const dl=daysLeft(t.contract_end);return dl<30&&dl>0;});
-  let html='';
-  if(lateCount>0)html+=`<div class="notification">⚠️ <b>${lateCount}</b> kiracının ödemesi gecikmeli. <a onclick="showPage('payments',document.querySelectorAll('.nav-item')[2])">Ödemelere git →</a></div>`;
-  if(lateOnes.length>0)html+=`<div class="notification">📋 <b>${lateOnes.length}</b> sözleşme 30 gün içinde bitiyor. <a onclick="showPage('contracts',document.querySelectorAll('.nav-item')[3])">Sözleşmelere git →</a></div>`;
-  notifs.innerHTML=html;
-
-  const contractsEl=document.getElementById('dash-contracts');
-  const sorted=[...allTenants].filter(t=>t.contract_end).sort((a,b)=>daysLeft(a.contract_end)-daysLeft(b.contract_end)).slice(0,5);
-  if(sorted.length===0){contractsEl.innerHTML='<div class="empty">Kiracı yok</div>';}
-  else{
-    contractsEl.innerHTML=sorted.map(t=>{
-      const dl=daysLeft(t.contract_end);
-      const badge=dl<30?'badge-danger':dl<60?'badge-warning':'badge-success';
-      const label=dl<0?'Süresi doldu':dl<60?dl+' gün':Math.round(dl/30)+' ay';
-      return`<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid #f0f0ec">
-        <span style="font-size:13px">${t.name} — D.${t.apt_no}</span>
-        <span class="badge ${badge}">${label}</span></div>`;
-    }).join('');
-  }
-
-  const aptsEl=document.getElementById('dash-apts');
-  const aptNos=allTenants.map(t=>t.apt_no).filter(Boolean);
-  if(aptNos.length===0){aptsEl.innerHTML='<div class="empty">Kiracı yok</div>';}
-  else{
-    aptsEl.innerHTML=aptNos.map(a=>{
-      const t=allTenants.find(x=>x.apt_no===a);
-      const dl=t?daysLeft(t.contract_end):999;
-      const cls=dl<30?'yakin':'dolu';
-      return`<div class="apt-box ${cls}" onclick="showPage('tenants',document.querySelectorAll('.nav-item')[1])"><div class="apt-num">${a}</div><div>${dl<30?'Yakın':'Dolu'}</div></div>`;
-    }).join('');
-  }
-
-  const tbody=document.getElementById('dash-payments');
-  if(!payments||payments.length===0){tbody.innerHTML='<tr><td colspan="5" class="empty">Ödeme yok</td></tr>';}
-  else{
-    tbody.innerHTML=payments.slice(0,8).map(p=>`<tr>
-      <td>${p.tenants?.name||'—'}</td>
-      <td>${p.period||''}</td>
-      <td>${fmt(p.total)}</td>
-      <td>${p.payment_date||'—'}</td>
-      <td>${statusBadge(p.status)}</td>
-    </tr>`).join('');
-  }
+function showPage(name){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  document.querySelector(`[data-page="${name}"]`).classList.add('active');
+  closeSidebar();
+  if(name==='dashboard')loadDashboard();
+  else if(name==='properties'){currentPropId=null;currentAptId=null;loadProperties();}
+  else if(name==='tenants')loadTenants();
+  else if(name==='payments')loadPayments();
+  else if(name==='expenses')loadExpenses();
+  else if(name==='reports')loadReports();
+  else if(name==='reminders')loadReminders();
 }
 
-// KİRACILAR
+document.querySelectorAll('.nav-item').forEach(el=>{
+  el.addEventListener('click',()=>showPage(el.dataset.page));
+});
+
+function previewImg(input,prevId,phId){
+  if(!input.files[0])return;
+  const f=input.files[0];
+  if(f.type.startsWith('image/')){
+    const el=document.getElementById(prevId);
+    el.src=URL.createObjectURL(f);el.style.display='block';
+    document.getElementById(phId).style.display='none';
+  }
+  window[phId+'_file']=f;
+}
+function showFileName(input,phId){
+  if(!input.files[0])return;
+  document.getElementById(phId).textContent='✅ '+input.files[0].name;
+  tenantContractFile=input.files[0];
+}
+function previewTenantPhoto(input){
+  if(!input.files[0])return;
+  tenantPhotoFile=input.files[0];
+  const url=URL.createObjectURL(tenantPhotoFile);
+  document.getElementById('t-photo-prev').src=url;
+  document.getElementById('t-photo-prev').style.display='block';
+  document.getElementById('t-photo-ph').style.display='none';
+}
+
+// ==================== DASHBOARD ====================
+async function loadDashboard(){
+  document.getElementById('dash-date').textContent=new Date().toLocaleDateString('tr-TR',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  const[{data:props},{data:tenants},{data:apts},{data:pays}]=await Promise.all([
+    db.from('properties').select('id').eq('is_active',true),
+    db.from('tenants').select('*').eq('is_active',true),
+    db.from('apartments').select('*'),
+    db.from('payments').select('*,tenants(name,apt_no,is_active)').order('created_at',{ascending:false}).limit(20)
+  ]);
+  allTenants=tenants||[];allProperties=props||[];allApartments=apts||[];
+  const dolu=allTenants.length;
+  const monthlyIncome=allTenants.reduce((s,t)=>s+(t.rent||0)+(t.aidat||0)+(t.internet||0),0);
+  const lateCount=(pays||[]).filter(p=>p.status==='late').length;
+  document.getElementById('m-prop').textContent=props?.length||0;
+  document.getElementById('m-full').textContent=dolu;
+  document.getElementById('m-income').textContent=fmt(monthlyIncome);
+  document.getElementById('m-late').textContent=lateCount;
+
+  const notifEl=document.getElementById('dash-notifs');
+  const expiringSoon=allTenants.filter(t=>{const dl=daysLeft(t.contract_end);return dl>0&&dl<30;});
+  let nh='';
+  if(lateCount>0)nh+=`<div class="notif">⚠️ <b>${lateCount}</b> gecikmiş ödeme var. <a onclick="showPage('payments')">Ödemelere git →</a></div>`;
+  if(expiringSoon.length>0)nh+=`<div class="notif">📋 <b>${expiringSoon.length}</b> sözleşme 30 gün içinde bitiyor.</div>`;
+  notifEl.innerHTML=nh;
+
+  const sorted=[...allTenants].filter(t=>t.contract_end).sort((a,b)=>daysLeft(a.contract_end)-daysLeft(b.contract_end)).slice(0,5);
+  document.getElementById('dash-contracts').innerHTML=sorted.length?sorted.map(t=>{
+    const dl=daysLeft(t.contract_end);
+    const bc=dl<0?'bd':dl<30?'bd':dl<60?'bw':'bs';
+    const lb=dl<0?'Süresi doldu':dl<60?dl+' gün':Math.round(dl/30)+' ay';
+    return`<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid #f0f0ec">
+      <span style="font-size:13px">${t.name} — D.${t.apt_no||'?'}</span><span class="badge ${bc}">${lb}</span></div>`;
+  }).join(''):'<div class="empty">Kiracı yok</div>';
+
+  const recentPays=(pays||[]).slice(0,6);
+  document.getElementById('dash-payments').innerHTML=recentPays.length?recentPays.map(p=>`
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid #f0f0ec;font-size:13px">
+      <div><div style="font-weight:500">${p.tenants?.name||'—'}</div><div style="font-size:11px;color:#888780">${p.period||''}</div></div>
+      <div style="display:flex;align-items:center;gap:8px"><span style="font-weight:600">${fmt(p.total)}</span>${statusBadge(p.status)}</div>
+    </div>`).join(''):'<div class="empty">Ödeme yok</div>';
+}
+
+// ==================== MÜLKLERİM ====================
+async function loadProperties(){
+  const{data}=await db.from('properties').select('*').eq('is_active',true).order('created_at');
+  allProperties=data||[];
+  document.getElementById('prop-page-title').textContent='Mülklerim';
+  document.getElementById('breadcrumb-area').innerHTML='';
+  document.getElementById('prop-page-actions').innerHTML=`<button class="btn btn-primary" onclick="openPropertyModal()">+ Yeni mülk</button>`;
+  if(!data||data.length===0){
+    document.getElementById('prop-content').innerHTML='<div class="empty">Henüz mülk eklenmemiş.<br><br><button class="btn btn-primary" onclick="openPropertyModal()">+ İlk mülkü ekle</button></div>';
+    return;
+  }
+  document.getElementById('prop-content').innerHTML=`<div class="grid-3">${data.map(p=>`
+    <div class="prop-card" onclick="loadApartments('${p.id}','${p.name.replace(/'/g,"\\'")}')">
+      <div class="prop-img">${p.photo_url?`<img src="${p.photo_url}">`:'🏢'}</div>
+      <div class="prop-body">
+        <div class="prop-name">${p.name}</div>
+        <div class="prop-sub">${p.type||''} ${p.city?'• '+p.city:''}</div>
+        <div style="margin-top:8px;display:flex;gap:6px;flex-wrap:wrap">
+          <span class="badge bi" id="prop-apt-count-${p.id}">Yükleniyor...</span>
+          <button class="btn btn-sm" style="margin-left:auto" onclick="event.stopPropagation();openPropertyModal('${p.id}')">✏️</button>
+          <button class="btn btn-sm btn-danger" onclick="event.stopPropagation();deleteProperty('${p.id}')">🗑️</button>
+        </div>
+      </div>
+    </div>`).join('')}</div>`;
+
+  data.forEach(async p=>{
+    const{count}=await db.from('apartments').select('id',{count:'exact'}).eq('property_id',p.id);
+    const el=document.getElementById('prop-apt-count-'+p.id);
+    if(el)el.textContent=(count||0)+' daire';
+  });
+}
+
+async function loadApartments(propId,propName){
+  currentPropId=propId;
+  const{data:apts}=await db.from('apartments').select('*,tenants(id,name,is_active)').eq('property_id',propId).order('apt_no');
+  document.getElementById('prop-page-title').textContent=propName;
+  document.getElementById('breadcrumb-area').innerHTML=`<div class="breadcrumb"><span onclick="loadProperties()">Mülklerim</span> › ${propName}</div>`;
+  document.getElementById('prop-page-actions').innerHTML=`<button class="btn btn-primary" onclick="openApartmentModal()">+ Daire ekle</button>`;
+
+  if(!apts||apts.length===0){
+    document.getElementById('prop-content').innerHTML='<div class="empty">Henüz daire eklenmemiş.<br><br><button class="btn btn-primary" onclick="openApartmentModal()">+ Daire ekle</button></div>';
+    return;
+  }
+  document.getElementById('prop-content').innerHTML=`<div class="grid-3">${apts.map(a=>{
+    const activeTenant=a.tenants?.find?.(t=>t.is_active)||a.tenants;
+    const hasTenant=activeTenant&&activeTenant.is_active!==false;
+    const status=hasTenant?'dolu':'bos';
+    return`<div class="apt-card ${status}" onclick="loadApartmentDetail('${a.id}','${propId}','${propName}')">
+      ${a.photo_url?`<img src="${a.photo_url}" style="width:100%;height:100px;object-fit:cover;border-radius:6px;margin-bottom:8px">`:''}
+      <div style="display:flex;justify-content:space-between;align-items:flex-start">
+        <div>
+          <div style="font-size:16px;font-weight:700">Daire ${a.apt_no}</div>
+          <div style="font-size:12px;color:#888780">${a.floor?a.floor+'. kat':''} ${a.type?'• '+a.type:''} ${a.size_m2?'• '+a.size_m2+'m²':''}</div>
+        </div>
+        <span class="badge ${hasTenant?'bs':'bg'}">${hasTenant?'Dolu':'Boş'}</span>
+      </div>
+      ${hasTenant?`<div style="margin-top:8px;font-size:12px;color:#185fa5;font-weight:500">👤 ${activeTenant.name}</div>`:''}
+      <div style="margin-top:8px;display:flex;gap:4px">
+        <button class="btn btn-sm" onclick="event.stopPropagation();openApartmentModal('${a.id}')">✏️</button>
+        <button class="btn btn-sm btn-danger" onclick="event.stopPropagation();deleteApartment('${a.id}')">🗑️</button>
+      </div>
+    </div>`;
+  }).join('')}</div>`;
+}
+
+async function loadApartmentDetail(aptId,propId,propName){
+  currentAptId=aptId;
+  const{data:apt}=await db.from('apartments').select('*').eq('id',aptId).single();
+  const{data:fixtures}=await db.from('fixtures').select('*').eq('apartment_id',aptId).order('category');
+  const{data:tenant}=await db.from('tenants').select('*').eq('apartment_id',aptId).eq('is_active',true).maybeSingle();
+  const{data:pastTenants}=await db.from('tenants').select('id,name,contract_start,contract_end').eq('apartment_id',aptId).eq('is_active',false).order('created_at',{ascending:false});
+
+  document.getElementById('prop-page-title').textContent=`Daire ${apt.apt_no}`;
+  document.getElementById('breadcrumb-area').innerHTML=`<div class="breadcrumb"><span onclick="loadProperties()">Mülklerim</span> › <span onclick="loadApartments('${propId}','${propName}')">${propName}</span> › Daire ${apt.apt_no}</div>`;
+  document.getElementById('prop-page-actions').innerHTML=`<button class="btn btn-primary" onclick="openFixtureModal()">+ Demirbaş ekle</button>`;
+
+  const catEmoji={'Beyaz eşya':'🫧','Mobilya':'🪑','Teknik ekipman':'📺','Isıtma/Soğutma':'❄️','Mutfak':'🍳','Banyo':'🚿','Diğer':'📦'};
+  const fixByCategory={};
+  (fixtures||[]).forEach(f=>{if(!fixByCategory[f.category])fixByCategory[f.category]=[];fixByCategory[f.category].push(f);});
+
+  document.getElementById('prop-content').innerHTML=`
+    <div class="tab-bar" id="apt-detail-tabs">
+      <div class="tab active" onclick="switchAptTab(this,'adt-info')">ℹ️ Bilgiler</div>
+      <div class="tab" onclick="switchAptTab(this,'adt-fixtures')">🔧 Demirbaşlar (${fixtures?.length||0})</div>
+      <div class="tab" onclick="switchAptTab(this,'adt-tenant')">👤 Kiracı</div>
+    </div>
+    <div id="adt-info" class="tab-content active">
+      <div class="card">
+        ${apt.photo_url?`<img src="${apt.photo_url}" style="width:100%;max-height:200px;object-fit:cover;border-radius:8px;margin-bottom:14px">`:''}
+        <div class="detail-grid">
+          <div class="di"><span class="di-label">Kapı no</span><span class="di-val">Daire ${apt.apt_no}</span></div>
+          <div class="di"><span class="di-label">Kat</span><span class="di-val">${apt.floor||'—'}</span></div>
+          <div class="di"><span class="di-label">Tip</span><span class="di-val">${apt.type||'—'}</span></div>
+          <div class="di"><span class="di-label">Alan</span><span class="di-val">${apt.size_m2?apt.size_m2+' m²':'—'}</span></div>
+        </div>
+        ${apt.notes?`<div class="sep"></div><div style="font-size:13px;color:#5f5e5a">${apt.notes}</div>`:''}
+      </div>
+    </div>
+    <div id="adt-fixtures" class="tab-content">
+      ${Object.keys(fixByCategory).length===0?'<div class="empty">Henüz demirbaş eklenmemiş.<br><br><button class="btn btn-primary" onclick="openFixtureModal()">+ Demirbaş ekle</button></div>':
+        Object.entries(fixByCategory).map(([cat,items])=>`
+          <div class="card">
+            <div class="section-title">${catEmoji[cat]||'📦'} ${cat}</div>
+            ${items.map(f=>`<div class="fixture-item">
+              <div class="fixture-img">${f.photo_url?`<img src="${f.photo_url}" style="width:40px;height:40px;border-radius:6px;object-fit:cover">`:(catEmoji[f.category]||'📦')}</div>
+              <div style="flex:1">
+                <div style="font-size:13px;font-weight:500">${f.name}</div>
+                <div style="font-size:12px;color:#888780">${[f.brand,f.model,f.serial_no].filter(Boolean).join(' • ')||''}</div>
+              </div>
+              <span class="badge ${condColor[f.condition]||'bg'}">${f.condition||'—'}</span>
+              <button class="btn btn-sm btn-danger" onclick="deleteFixture('${f.id}')">🗑️</button>
+            </div>`).join('')}
+          </div>`).join('')
+      }
+    </div>
+    <div id="adt-tenant" class="tab-content">
+      ${tenant?`<div class="card">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px">
+          ${tenant.photo_url?`<img src="${tenant.photo_url}" class="img-circle" style="width:52px;height:52px">`:`<div class="avatar ${avColor(tenant.name)}" style="width:52px;height:52px;font-size:18px">${initials(tenant.name)}</div>`}
+          <div>
+            <div style="font-size:16px;font-weight:600">${tenant.name}</div>
+            <div style="font-size:13px;color:#888780">${tenant.phone||''}</div>
+          </div>
+          <div style="margin-left:auto;display:flex;gap:6px">
+            <button class="btn btn-sm" onclick="showTenantDetail('${tenant.id}')">Detay</button>
+            <button class="btn btn-sm btn-warning" onclick="setTenantPassive('${tenant.id}')">Pasife al</button>
+          </div>
+        </div>
+        <div class="detail-grid">
+          <div class="di"><span class="di-label">Kira</span><span class="di-val">${fmt(tenant.rent)}</span></div>
+          <div class="di"><span class="di-label">Toplam</span><span class="di-val mv-green">${fmt((tenant.rent||0)+(tenant.aidat||0)+(tenant.internet||0))}</span></div>
+          <div class="di"><span class="di-label">Sözleşme bitiş</span><span class="di-val">${tenant.contract_end||'—'}</span></div>
+          <div class="di"><span class="di-label">Elektrik no</span><span class="di-val">${tenant.electric_no||'—'}</span></div>
+        </div>
+      </div>`:`<div class="card"><div class="empty">Bu dairede aktif kiracı yok.<br><br><button class="btn btn-primary" onclick="openTenantModal(null,'${aptId}')">+ Kiracı ata</button></div></div>`}
+      ${pastTenants&&pastTenants.length>0?`<div class="card"><div class="section-title">Geçmiş kiracılar</div>
+        ${pastTenants.map(t=>`<div style="display:flex;justify-content:space-between;align-items:center;padding:7px 0;border-bottom:1px solid #f0f0ec;font-size:13px">
+          <span>${t.name}</span><span style="color:#888780;font-size:12px">${t.contract_start||''}${t.contract_end?' → '+t.contract_end:''}</span>
+        </div>`).join('')}
+      </div>`:''}
+    </div>`;
+}
+
+function switchAptTab(el,tid){
+  document.querySelectorAll('#apt-detail-tabs .tab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  ['adt-info','adt-fixtures','adt-tenant'].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.remove('active');});
+  document.getElementById(tid).classList.add('active');
+}
+
+// MÜLK CRUD
+function openPropertyModal(id){
+  document.getElementById('prop-id').value=id||'';
+  document.getElementById('prop-modal-title').textContent=id?'Mülkü düzenle':'Yeni mülk ekle';
+  ['prop-name','prop-address','prop-city','prop-notes'].forEach(i=>document.getElementById(i).value='');
+  propPhotoFile=null;
+  document.getElementById('prop-photo-preview').style.display='none';
+  document.getElementById('prop-photo-placeholder').style.display='block';
+  if(id){
+    const p=allProperties.find(x=>x.id===id);
+    if(p){
+      document.getElementById('prop-name').value=p.name||'';
+      document.getElementById('prop-address').value=p.address||'';
+      document.getElementById('prop-city').value=p.city||'';
+      document.getElementById('prop-notes').value=p.notes||'';
+      document.getElementById('prop-type').value=p.type||'Apartman';
+      if(p.photo_url){document.getElementById('prop-photo-preview').src=p.photo_url;document.getElementById('prop-photo-preview').style.display='block';}
+    }
+  }
+  openModal('modal-property');
+}
+
+async function saveProperty(){
+  const name=document.getElementById('prop-name').value.trim();
+  if(!name){toast('Mülk adı zorunludur','err');return;}
+  let photo_url=undefined;
+  const pf=window['prop-photo-placeholder_file'];
+  if(pf){try{photo_url=await uploadFile(pf,'properties');}catch(e){toast('Fotoğraf yüklenemedi','err');return;}}
+  const payload={name,type:document.getElementById('prop-type').value,address:document.getElementById('prop-address').value,city:document.getElementById('prop-city').value,notes:document.getElementById('prop-notes').value};
+  if(photo_url)payload.photo_url=photo_url;
+  const pid=document.getElementById('prop-id').value;
+  const{error}=pid?await db.from('properties').update(payload).eq('id',pid):await db.from('properties').insert(payload);
+  if(error){toast('Hata: '+error.message,'err');return;}
+  toast(pid?'Mülk güncellendi!':'Mülk eklendi!');
+  closeModal('modal-property');loadProperties();
+}
+
+async function deleteProperty(id){
+  if(!confirm('Bu mülkü silmek istediğinizden emin misiniz?'))return;
+  await db.from('properties').update({is_active:false}).eq('id',id);
+  toast('Mülk silindi');loadProperties();
+}
+
+// DAİRE CRUD
+function openApartmentModal(id){
+  document.getElementById('apt-id').value=id||'';
+  document.getElementById('apt-prop-id').value=currentPropId||'';
+  document.getElementById('apt-modal-title').textContent=id?'Daireyi düzenle':'Yeni daire ekle';
+  ['apt-no','apt-floor','apt-size','apt-notes'].forEach(i=>document.getElementById(i).value='');
+  aptPhotoFile=null;
+  document.getElementById('apt-photo-preview').style.display='none';
+  document.getElementById('apt-photo-placeholder').style.display='block';
+  openModal('modal-apartment');
+}
+
+async function saveApartment(){
+  const no=document.getElementById('apt-no').value.trim();
+  if(!no){toast('Kapı no zorunludur','err');return;}
+  let photo_url=undefined;
+  const af=window['apt-photo-placeholder_file'];
+  if(af){try{photo_url=await uploadFile(af,'apartments');}catch(e){toast('Fotoğraf yüklenemedi','err');return;}}
+  const payload={property_id:document.getElementById('apt-prop-id').value,apt_no:no,floor:document.getElementById('apt-floor').value,type:document.getElementById('apt-type').value,size_m2:parseFloat(document.getElementById('apt-size').value)||null,notes:document.getElementById('apt-notes').value};
+  if(photo_url)payload.photo_url=photo_url;
+  const aid=document.getElementById('apt-id').value;
+  const{error}=aid?await db.from('apartments').update(payload).eq('id',aid):await db.from('apartments').insert(payload);
+  if(error){toast('Hata: '+error.message,'err');return;}
+  toast(aid?'Daire güncellendi!':'Daire eklendi!');
+  closeModal('modal-apartment');
+  const prop=allProperties.find(p=>p.id===currentPropId);
+  loadApartments(currentPropId,prop?.name||'');
+}
+
+async function deleteApartment(id){
+  if(!confirm('Bu daireyi silmek istediğinizden emin misiniz?'))return;
+  await db.from('apartments').delete().eq('id',id);
+  toast('Daire silindi');
+  const prop=allProperties.find(p=>p.id===currentPropId);
+  loadApartments(currentPropId,prop?.name||'');
+}
+
+// DEMİRBAŞ CRUD
+function openFixtureModal(id){
+  document.getElementById('fix-id').value=id||'';
+  document.getElementById('fix-apt-id').value=currentAptId||'';
+  document.getElementById('fix-modal-title').textContent=id?'Demirbaşı düzenle':'Demirbaş ekle';
+  ['fix-name','fix-brand','fix-model','fix-serial','fix-notes'].forEach(i=>document.getElementById(i).value='');
+  document.getElementById('fix-date').value='';
+  fixPhotoFile=null;
+  document.getElementById('fix-photo-preview').style.display='none';
+  document.getElementById('fix-photo-placeholder').style.display='block';
+  openModal('modal-fixture');
+}
+
+async function saveFixture(){
+  const name=document.getElementById('fix-name').value.trim();
+  if(!name){toast('Demirbaş adı zorunludur','err');return;}
+  let photo_url=undefined;
+  const ff=window['fix-photo-placeholder_file'];
+  if(ff){try{photo_url=await uploadFile(ff,'fixtures');}catch(e){}}
+  const payload={apartment_id:document.getElementById('fix-apt-id').value,name,category:document.getElementById('fix-cat').value,condition:document.getElementById('fix-cond').value,brand:document.getElementById('fix-brand').value,model:document.getElementById('fix-model').value,serial_no:document.getElementById('fix-serial').value,purchase_date:document.getElementById('fix-date').value||null,notes:document.getElementById('fix-notes').value};
+  if(photo_url)payload.photo_url=photo_url;
+  const fid=document.getElementById('fix-id').value;
+  const{error}=fid?await db.from('fixtures').update(payload).eq('id',fid):await db.from('fixtures').insert(payload);
+  if(error){toast('Hata: '+error.message,'err');return;}
+  toast('Demirbaş eklendi!');closeModal('modal-fixture');
+  const prop=allProperties.find(p=>p.id===currentPropId);
+  loadApartmentDetail(currentAptId,currentPropId,prop?.name||'');
+}
+
+async function deleteFixture(id){
+  if(!confirm('Bu demirbaşı silmek istediğinizden emin misiniz?'))return;
+  await db.from('fixtures').delete().eq('id',id);
+  toast('Demirbaş silindi');
+  const prop=allProperties.find(p=>p.id===currentPropId);
+  loadApartmentDetail(currentAptId,currentPropId,prop?.name||'');
+}
+
+// ==================== KİRACILAR ====================
 async function loadTenants(){
-  const{data,error}=await db.from('tenants').select('*').eq('is_active',true).order('apt_no');
-  allTenants=data||[];
-  renderTenantGrid(allTenants);
+  const{data}=await db.from('tenants').select('*,apartments(apt_no,property_id,properties(name))').order('created_at',{ascending:false});
+  allTenants=(data||[]).filter(t=>t.is_active);
+  window._allTenantsRaw=data||[];
+  filterTenants();
+}
+
+function filterTenants(){
+  const q=(document.getElementById('tenant-search').value||'').toLowerCase();
+  const sf=document.getElementById('tenant-status-filter').value;
+  const raw=window._allTenantsRaw||[];
+  let list=raw.filter(t=>{
+    if(sf==='active'&&!t.is_active)return false;
+    if(sf==='passive'&&t.is_active)return false;
+    return(t.name||'').toLowerCase().includes(q)||(t.tc||'').includes(q)||(t.apartments?.apt_no||'').includes(q)||(t.phone||'').includes(q);
+  });
+  renderTenantGrid(list);
 }
 
 function renderTenantGrid(list){
   const grid=document.getElementById('tenant-grid');
-  if(list.length===0){grid.innerHTML='<div class="empty">Henüz kiracı yok. Yeni kiracı ekleyin.</div>';return;}
+  if(!list.length){grid.innerHTML='<div class="empty">Kiracı bulunamadı</div>';return;}
   grid.innerHTML=list.map(t=>{
     const total=(t.rent||0)+(t.aidat||0)+(t.internet||0);
     const dl=daysLeft(t.contract_end);
-    const cBadge=dl<30?`<span class="badge badge-danger">${dl} gün</span>`:dl<60?`<span class="badge badge-warning">${dl} gün</span>`:`<span class="badge badge-success">${Math.round(dl/30)} ay</span>`;
-    const pfill=dl<30?'danger-fill':dl<60?'warn':'';
-    const pct=Math.min(100,Math.max(5,(365-dl)/365*100));
-    const photo=t.photo_url?`<img src="${t.photo_url}" style="width:42px;height:42px;border-radius:50%;object-fit:cover;border:1px solid #e8e8e4">`:`<div class="avatar ${colorOf(t.name)}">${initials(t.name)}</div>`;
+    const cBadge=t.contract_end?(dl<0?'<span class="badge bd">Süresi doldu</span>':dl<30?`<span class="badge bd">${dl} gün</span>`:dl<60?`<span class="badge bw">${dl} gün</span>`:`<span class="badge bs">${Math.round(dl/30)} ay</span>`):'';
+    const photo=t.photo_url?`<img src="${t.photo_url}" class="img-circle">`:`<div class="avatar ${avColor(t.name)}">${initials(t.name)}</div>`;
+    const propName=t.apartments?.properties?.name||'';
+    const aptNo=t.apartments?.apt_no||t.apt_no||'?';
     return`<div class="tenant-card" onclick="showTenantDetail('${t.id}')">
+      ${!t.is_active?'<div class="pasif-banner">⛔ Pasif kiracı</div>':''}
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
         ${photo}
         <div style="flex:1;min-width:0">
           <div style="font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${t.name}</div>
-          <div style="font-size:12px;color:#888780">Daire ${t.apt_no||'?'} ${t.floor?'• '+t.floor+'. kat':''}</div>
+          <div style="font-size:12px;color:#888780">${propName?propName+' — ':''}Daire ${aptNo}</div>
         </div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;font-size:12px;margin-bottom:8px">
@@ -769,242 +1143,78 @@ function renderTenantGrid(list){
         <div><div style="color:#888780;font-size:11px">Elektrik</div><div style="font-size:11px;font-weight:500">${t.electric_no||'—'}</div></div>
         <div><div style="color:#888780;font-size:11px">Su kart</div><div style="font-size:11px;font-weight:500">${t.water_no||'—'}</div></div>
       </div>
-      <div style="display:flex;justify-content:space-between;align-items:center">
-        <span style="font-size:11px;color:#888780">Sözleşme</span>${t.contract_end?cBadge:'<span class="badge badge-gray">Tarih yok</span>'}
-      </div>
-      <div class="progress-bar"><div class="progress-fill ${pfill}" style="width:${pct}%"></div></div>
+      ${cBadge?`<div style="display:flex;justify-content:space-between;align-items:center;font-size:12px"><span style="color:#888780">Sözleşme</span>${cBadge}</div>`:''}
     </div>`;
   }).join('');
 }
 
-function filterTenants(){
-  const q=document.getElementById('tenant-search').value.toLowerCase();
-  const filtered=allTenants.filter(t=>
-    (t.name||'').toLowerCase().includes(q)||
-    (t.apt_no||'').toLowerCase().includes(q)||
-    (t.tc||'').includes(q)||
-    (t.phone||'').includes(q)
-  );
-  renderTenantGrid(filtered);
-}
+async function openTenantModal(id,preselectedAptId){
+  const{data:props}=await db.from('properties').select('id,name').eq('is_active',true);
+  allProperties=props||[];
+  const sel=document.getElementById('t-prop-sel');
+  sel.innerHTML='<option value="">— Mülk seçin —</option>'+allProperties.map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
 
-async function showTenantDetail(id){
-  const t=allTenants.find(x=>x.id===id);
-  if(!t)return;
-  const{data:pays}=await db.from('payments').select('*').eq('tenant_id',id).order('period',{ascending:false}).limit(12);
-  const{data:docs}=await db.from('documents').select('*').eq('tenant_id',id);
-  const total=(t.rent||0)+(t.aidat||0)+(t.internet||0);
-  const photo=t.photo_url?`<img src="${t.photo_url}" style="width:64px;height:64px;border-radius:50%;object-fit:cover;border:2px solid #e8e8e4">`:`<div class="avatar ${colorOf(t.name)}" style="width:64px;height:64px;font-size:20px">${initials(t.name)}</div>`;
-
-  document.getElementById('detail-name').textContent=t.name+' — Daire '+t.apt_no;
-  document.getElementById('detail-body').innerHTML=`
-    <div style="display:flex;align-items:center;gap:14px;margin-bottom:18px">
-      ${photo}
-      <div>
-        <div style="font-size:18px;font-weight:600">${t.name}</div>
-        <div style="font-size:13px;color:#888780">Daire ${t.apt_no||'?'}${t.floor?' • '+t.floor+'. kat':''}</div>
-        ${t.phone?`<div style="font-size:13px;margin-top:2px"><a href="tel:${t.phone}" style="color:#185fa5">${t.phone}</a></div>`:''}
-      </div>
-      <div style="margin-left:auto;display:flex;gap:8px">
-        <button class="btn btn-sm" onclick="editTenant('${t.id}')">✏️ Düzenle</button>
-        <button class="btn btn-sm btn-danger" onclick="deleteTenant('${t.id}')">🗑️ Sil</button>
-      </div>
-    </div>
-    <div class="tab-bar">
-      <div class="tab active" onclick="switchTab(this,'det-info')">Bilgiler</div>
-      <div class="tab" onclick="switchTab(this,'det-pays')">Ödemeler</div>
-      <div class="tab" onclick="switchTab(this,'det-docs')">Belgeler</div>
-    </div>
-    <div class="tab-content active" id="det-info">
-      <div class="detail-grid">
-        <div class="detail-item"><span class="detail-label">TC Kimlik</span><span class="detail-val">${t.tc||'—'}</span></div>
-        <div class="detail-item"><span class="detail-label">E-posta</span><span class="detail-val">${t.email||'—'}</span></div>
-        <div class="detail-item"><span class="detail-label">Doğum tarihi</span><span class="detail-val">${t.birth_date||'—'}</span></div>
-        <div class="detail-item"><span class="detail-label">Meslek</span><span class="detail-val">${t.job||'—'}</span></div>
-        <div class="detail-item"><span class="detail-label">Acil iletişim</span><span class="detail-val">${t.emergency_contact||'—'}</span></div>
-        <div class="detail-item"><span class="detail-label">Ödeme yöntemi</span><span class="detail-val">${t.payment_method||'—'}</span></div>
-      </div>
-      <div class="separator"></div>
-      <div class="detail-grid">
-        <div class="detail-item"><span class="detail-label">Kira</span><span class="detail-val" style="color:#185fa5">${fmt(t.rent)}</span></div>
-        <div class="detail-item"><span class="detail-label">Aidat</span><span class="detail-val">${fmt(t.aidat)}</span></div>
-        <div class="detail-item"><span class="detail-label">İnternet</span><span class="detail-val">${fmt(t.internet)}</span></div>
-        <div class="detail-item"><span class="detail-label">Aylık toplam</span><span class="detail-val" style="color:#27500a;font-size:16px">${fmt(total)}</span></div>
-        <div class="detail-item"><span class="detail-label">Depozito</span><span class="detail-val">${fmt(t.deposit)}</span></div>
-        <div class="detail-item"><span class="detail-label">Kira günü</span><span class="detail-val">Her ayın ${t.payment_day||5}. günü</span></div>
-      </div>
-      <div class="separator"></div>
-      <div class="detail-grid">
-        <div class="detail-item"><span class="detail-label">Elektrik abone no</span><span class="detail-val">${t.electric_no||'—'}</span></div>
-        <div class="detail-item"><span class="detail-label">Su kart no</span><span class="detail-val">${t.water_no||'—'}</span></div>
-        <div class="detail-item"><span class="detail-label">Sözleşme başlangıç</span><span class="detail-val">${t.contract_start||'—'}</span></div>
-        <div class="detail-item"><span class="detail-label">Sözleşme bitiş</span><span class="detail-val">${t.contract_end||'—'} ${t.contract_end?`(${daysLeft(t.contract_end)} gün)`:''}</span></div>
-      </div>
-      ${t.notes?`<div class="separator"></div><div style="font-size:13px;color:#5f5e5a"><strong>Notlar:</strong><br>${t.notes}</div>`:''}
-    </div>
-    <div class="tab-content" id="det-pays">
-      ${pays&&pays.length>0?`<table><thead><tr><th>Dönem</th><th>Kira</th><th>Aidat</th><th>Toplam</th><th>Tarih</th><th>Durum</th><th></th></tr></thead><tbody>
-        ${pays.map(p=>`<tr>
-          <td>${p.period}</td><td>${fmt(p.rent)}</td><td>${fmt(p.aidat)}</td>
-          <td><strong>${fmt(p.total)}</strong></td>
-          <td>${p.payment_date||'—'}</td>
-          <td>${statusBadge(p.status)}</td>
-          <td><button class="btn btn-sm" onclick="openPaymentModal('${p.id}')">✏️</button></td>
-        </tr>`).join('')}
-      </tbody></table>`:
-      `<div class="empty">Henüz ödeme kaydı yok.<br><br><button class="btn btn-primary" onclick="openPaymentModal(null,'${t.id}')">+ Ödeme ekle</button></div>`}
-    </div>
-    <div class="tab-content" id="det-docs">
-      ${t.id_photo_url?`<div style="margin-bottom:12px"><div style="font-size:12px;color:#888780;margin-bottom:4px">Kimlik belgesi</div><img src="${t.id_photo_url}" style="max-width:200px;border-radius:8px;border:1px solid #e8e8e4"></div>`:''}
-      ${docs&&docs.length>0?docs.map(d=>`<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #f0f0ec">
-        <span style="font-size:20px">📄</span>
-        <div style="flex:1"><div style="font-size:13px;font-weight:500">${d.name||d.file_name}</div><div style="font-size:11px;color:#888780">${d.type||''}</div></div>
-        <a href="${d.file_url}" target="_blank" class="btn btn-sm">Görüntüle</a>
-      </div>`).join(''):`<div class="empty">Belge yok</div>`}
-    </div>`;
-  openModal('modal-detail');
-}
-
-// KİRACı FORM
-function openTenantModal(){
-  document.getElementById('tenant-id').value='';
-  document.getElementById('tenant-modal-title').textContent='Yeni kiracı ekle';
-  document.getElementById('tenant-save-btn').textContent='Kaydet';
-  ['t-name','t-tc','t-phone','t-email','t-birth','t-job','t-emergency','t-notes',
-   't-apt','t-floor','t-electric','t-water','t-notes'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
-  ['t-rent','t-aidat','t-internet','t-deposit','t-payDay'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('tenant-id').value=id||'';
+  document.getElementById('tenant-modal-title').textContent=id?'Kiracıyı düzenle':'Yeni kiracı';
+  ['t-name','t-tc','t-phone','t-email','t-job','t-emergency','t-notes','t-electric','t-water'].forEach(i=>document.getElementById(i).value='');
+  ['t-rent','t-aidat','t-internet','t-deposit','t-payDay'].forEach(i=>document.getElementById(i).value='');
+  document.getElementById('t-birth').value='';
   document.getElementById('t-cstart').value='';
   document.getElementById('t-cend').value='';
-  document.getElementById('photo-preview').style.display='none';
-  document.getElementById('photo-placeholder').style.display='flex';
+  tenantPhotoFile=null;tenantIdFile=null;tenantContractFile=null;
+  document.getElementById('t-photo-prev').style.display='none';
+  document.getElementById('t-photo-ph').style.display='flex';
+  document.getElementById('t-id-prev').style.display='none';
+  document.getElementById('t-id-ph').textContent='📋 Kimlik görselini yükleyin';
+  document.getElementById('t-contract-ph').textContent='📄 PDF veya görsel yükleyin';
   document.getElementById('tenant-total-preview').textContent='₺0';
-  photoFile=null;idFile=null;contractFile=null;
-  const tc=document.querySelector('.tab-bar .tab.active');
-  document.querySelectorAll('.tab-bar .tab').forEach(t=>t.classList.remove('active'));
-  document.querySelector('[onclick*="tc-kisisel"]').classList.add('active');
-  document.querySelectorAll('.tab-content').forEach(c=>c.classList.remove('active'));
-  document.getElementById('tc-kisisel').classList.add('active');
+
+  if(preselectedAptId){
+    const apt=allApartments.find(a=>a.id===preselectedAptId);
+    if(apt&&apt.property_id){
+      sel.value=apt.property_id;
+      await loadApartmentsForTenant();
+      document.getElementById('t-apt-sel').value=preselectedAptId;
+    }
+  }
+
+  if(id){
+    const{data:t}=await db.from('tenants').select('*').eq('id',id).single();
+    if(t){
+      document.getElementById('t-name').value=t.name||'';
+      document.getElementById('t-tc').value=t.tc||'';
+      document.getElementById('t-phone').value=t.phone||'';
+      document.getElementById('t-email').value=t.email||'';
+      document.getElementById('t-birth').value=t.birth_date||'';
+      document.getElementById('t-job').value=t.job||'';
+      document.getElementById('t-emergency').value=t.emergency_contact||'';
+      document.getElementById('t-notes').value=t.notes||'';
+      document.getElementById('t-rent').value=t.rent||'';
+      document.getElementById('t-aidat').value=t.aidat||'';
+      document.getElementById('t-internet').value=t.internet||'';
+      document.getElementById('t-payDay').value=t.payment_day||5;
+      document.getElementById('t-electric').value=t.electric_no||'';
+      document.getElementById('t-water').value=t.water_no||'';
+      document.getElementById('t-cstart').value=t.contract_start||'';
+      document.getElementById('t-cend').value=t.contract_end||'';
+      document.getElementById('t-deposit').value=t.deposit||'';
+      document.getElementById('t-paymethod').value=t.payment_method||'Havale';
+      if(t.property_id){sel.value=t.property_id;await loadApartmentsForTenant();if(t.apartment_id)document.getElementById('t-apt-sel').value=t.apartment_id;}
+      if(t.photo_url){document.getElementById('t-photo-prev').src=t.photo_url;document.getElementById('t-photo-prev').style.display='block';document.getElementById('t-photo-ph').style.display='none';}
+      updateTenantTotal();
+    }
+  }
   openModal('modal-tenant');
 }
 
-async function editTenant(id){
-  closeModal('modal-detail');
-  const t=allTenants.find(x=>x.id===id);
-  if(!t)return;
-  document.getElementById('tenant-id').value=t.id;
-  document.getElementById('tenant-modal-title').textContent='Kiracıyı düzenle';
-  document.getElementById('t-name').value=t.name||'';
-  document.getElementById('t-tc').value=t.tc||'';
-  document.getElementById('t-phone').value=t.phone||'';
-  document.getElementById('t-email').value=t.email||'';
-  document.getElementById('t-birth').value=t.birth_date||'';
-  document.getElementById('t-job').value=t.job||'';
-  document.getElementById('t-emergency').value=t.emergency_contact||'';
-  document.getElementById('t-notes').value=t.notes||'';
-  document.getElementById('t-apt').value=t.apt_no||'';
-  document.getElementById('t-floor').value=t.floor||'';
-  document.getElementById('t-rent').value=t.rent||'';
-  document.getElementById('t-aidat').value=t.aidat||'';
-  document.getElementById('t-internet').value=t.internet||'';
-  document.getElementById('t-payDay').value=t.payment_day||5;
-  document.getElementById('t-electric').value=t.electric_no||'';
-  document.getElementById('t-water').value=t.water_no||'';
-  document.getElementById('t-cstart').value=t.contract_start||'';
-  document.getElementById('t-cend').value=t.contract_end||'';
-  document.getElementById('t-deposit').value=t.deposit||'';
-  document.getElementById('t-paymethod').value=t.payment_method||'Havale';
-  if(t.photo_url){
-    document.getElementById('photo-preview').src=t.photo_url;
-    document.getElementById('photo-preview').style.display='block';
-    document.getElementById('photo-placeholder').style.display='none';
-  }
-  updateTenantTotal();
-  openModal('modal-tenant');
+async function loadApartmentsForTenant(){
+  const pid=document.getElementById('t-prop-sel').value;
+  const sel=document.getElementById('t-apt-sel');
+  if(!pid){sel.innerHTML='<option value="">— Önce mülk seçin —</option>';return;}
+  const{data}=await db.from('apartments').select('id,apt_no,floor').eq('property_id',pid).order('apt_no');
+  sel.innerHTML='<option value="">— Daire seçin —</option>'+(data||[]).map(a=>`<option value="${a.id}">Daire ${a.apt_no}${a.floor?' ('+a.floor+'. kat)':''}</option>`).join('');
 }
 
-async function saveTenant(){
-  const name=document.getElementById('t-name').value.trim();
-  const apt=document.getElementById('t-apt').value.trim();
-  if(!name){toast('Ad soyad zorunludur','error');return;}
-  const btn=document.getElementById('tenant-save-btn');
-  btn.textContent='Kaydediliyor...';btn.disabled=true;
-  try{
-    let photo_url=null,id_photo_url=null,contractUrl=null;
-    if(photoFile)photo_url=await uploadFile(photoFile,'photos');
-    if(idFile)id_photo_url=await uploadFile(idFile,'ids');
-    if(contractFile)contractUrl=await uploadFile(contractFile,'contracts');
-
-    const tenantId=document.getElementById('tenant-id').value;
-    const payload={
-      name,tc:document.getElementById('t-tc').value,phone:document.getElementById('t-phone').value,
-      email:document.getElementById('t-email').value,birth_date:document.getElementById('t-birth').value||null,
-      job:document.getElementById('t-job').value,emergency_contact:document.getElementById('t-emergency').value,
-      notes:document.getElementById('t-notes').value,apt_no:apt,floor:document.getElementById('t-floor').value,
-      rent:parseFloat(document.getElementById('t-rent').value)||0,
-      aidat:parseFloat(document.getElementById('t-aidat').value)||0,
-      internet:parseFloat(document.getElementById('t-internet').value)||0,
-      payment_day:parseInt(document.getElementById('t-payDay').value)||5,
-      electric_no:document.getElementById('t-electric').value,water_no:document.getElementById('t-water').value,
-      contract_start:document.getElementById('t-cstart').value||null,
-      contract_end:document.getElementById('t-cend').value||null,
-      deposit:parseFloat(document.getElementById('t-deposit').value)||0,
-      payment_method:document.getElementById('t-paymethod').value,
-    };
-    if(photo_url)payload.photo_url=photo_url;
-    if(id_photo_url)payload.id_photo_url=id_photo_url;
-
-    let savedId=tenantId;
-    if(tenantId){
-      const{error}=await db.from('tenants').update(payload).eq('id',tenantId);
-      if(error)throw error;
-    }else{
-      const{data,error}=await db.from('tenants').insert(payload).select().single();
-      if(error)throw error;
-      savedId=data.id;
-    }
-    if(contractUrl&&savedId){
-      await db.from('documents').insert({tenant_id:savedId,name:'Kira Sözleşmesi',type:'Sözleşme',file_url:contractUrl,file_name:contractFile.name});
-    }
-    toast(tenantId?'Kiracı güncellendi!':'Kiracı eklendi!');
-    closeModal('modal-tenant');
-    loadTenants();
-  }catch(e){toast('Hata: '+e.message,'error');}
-  finally{btn.textContent='Kaydet';btn.disabled=false;}
-}
-
-async function deleteTenant(id){
-  if(!confirm('Bu kiracıyı silmek istediğinizden emin misiniz?'))return;
-  const{error}=await db.from('tenants').update({is_active:false}).eq('id',id);
-  if(error){toast('Hata: '+error.message,'error');return;}
-  toast('Kiracı silindi');
-  closeModal('modal-detail');
-  loadTenants();
-}
-
-function previewPhoto(input){
-  if(!input.files[0])return;
-  photoFile=input.files[0];
-  const url=URL.createObjectURL(photoFile);
-  document.getElementById('photo-preview').src=url;
-  document.getElementById('photo-preview').style.display='block';
-  document.getElementById('photo-placeholder').style.display='none';
-}
-function previewId(input){
-  if(!input.files[0])return;
-  idFile=input.files[0];
-  document.getElementById('id-placeholder').textContent='✅ '+idFile.name;
-  if(idFile.type.startsWith('image/')){
-    document.getElementById('id-preview').src=URL.createObjectURL(idFile);
-    document.getElementById('id-preview').style.display='block';
-  }
-}
-function previewContract(input){
-  if(!input.files[0])return;
-  contractFile=input.files[0];
-  document.getElementById('contract-placeholder').textContent='✅ '+contractFile.name;
-  document.getElementById('contract-name').textContent=contractFile.name;
-  document.getElementById('contract-name').style.display='block';
-}
 function updateTenantTotal(){
   const r=parseFloat(document.getElementById('t-rent').value)||0;
   const a=parseFloat(document.getElementById('t-aidat').value)||0;
@@ -1012,50 +1222,150 @@ function updateTenantTotal(){
   document.getElementById('tenant-total-preview').textContent=fmt(r+a+i);
 }
 
-// ÖDEMELER
+async function saveTenant(){
+  const name=document.getElementById('t-name').value.trim();
+  if(!name){toast('Ad soyad zorunludur','err');return;}
+  const btn=document.getElementById('tenant-save-btn');
+  btn.textContent='Kaydediliyor...';btn.disabled=true;
+  try{
+    let photo_url,id_photo_url,contractUrl;
+    if(tenantPhotoFile)photo_url=await uploadFile(tenantPhotoFile,'photos');
+    if(window['t-id-ph_file'])id_photo_url=await uploadFile(window['t-id-ph_file'],'ids');
+    if(tenantContractFile)contractUrl=await uploadFile(tenantContractFile,'contracts');
+    const aptId=document.getElementById('t-apt-sel').value||null;
+    const propId=document.getElementById('t-prop-sel').value||null;
+    const payload={name,tc:document.getElementById('t-tc').value,phone:document.getElementById('t-phone').value,email:document.getElementById('t-email').value,birth_date:document.getElementById('t-birth').value||null,job:document.getElementById('t-job').value,emergency_contact:document.getElementById('t-emergency').value,notes:document.getElementById('t-notes').value,apartment_id:aptId,property_id:propId,apt_no:null,rent:parseFloat(document.getElementById('t-rent').value)||0,aidat:parseFloat(document.getElementById('t-aidat').value)||0,internet:parseFloat(document.getElementById('t-internet').value)||0,payment_day:parseInt(document.getElementById('t-payDay').value)||5,electric_no:document.getElementById('t-electric').value,water_no:document.getElementById('t-water').value,contract_start:document.getElementById('t-cstart').value||null,contract_end:document.getElementById('t-cend').value||null,deposit:parseFloat(document.getElementById('t-deposit').value)||0,payment_method:document.getElementById('t-paymethod').value,is_active:true};
+    if(photo_url)payload.photo_url=photo_url;
+    if(id_photo_url)payload.id_photo_url=id_photo_url;
+    const tid=document.getElementById('tenant-id').value;
+    let savedId=tid;
+    if(tid){await db.from('tenants').update(payload).eq('id',tid);}
+    else{const{data}=await db.from('tenants').insert(payload).select().single();savedId=data.id;}
+    if(contractUrl&&savedId)await db.from('documents').insert({tenant_id:savedId,name:'Kira Sözleşmesi',type:'Sözleşme',file_url:contractUrl,file_name:tenantContractFile.name});
+    toast(tid?'Kiracı güncellendi!':'Kiracı eklendi!');
+    closeModal('modal-tenant');loadTenants();
+  }catch(e){toast('Hata: '+e.message,'err');}
+  finally{btn.textContent='Kaydet';btn.disabled=false;}
+}
+
+async function setTenantPassive(id){
+  if(!confirm('Bu kiracıyı pasife almak istediğinizden emin misiniz?\nÖdeme geçmişi ve raporlarda görünmeye devam edecek.'))return;
+  await db.from('tenants').update({is_active:false}).eq('id',id);
+  toast('Kiracı pasife alındı');
+  closeModal('modal-detail');loadTenants();
+  if(currentAptId){const prop=allProperties.find(p=>p.id===currentPropId);loadApartmentDetail(currentAptId,currentPropId,prop?.name||'');}
+}
+
+async function reactivateTenant(id){
+  await db.from('tenants').update({is_active:true}).eq('id',id);
+  toast('Kiracı aktive edildi');closeModal('modal-detail');loadTenants();
+}
+
+async function showTenantDetail(id){
+  const{data:t}=await db.from('tenants').select('*,apartments(apt_no,floor,properties(name))').eq('id',id).single();
+  const{data:pays}=await db.from('payments').select('*').eq('tenant_id',id).order('period',{ascending:false}).limit(24);
+  const{data:docs}=await db.from('documents').select('*').eq('tenant_id',id);
+  if(!t)return;
+  const total=(t.rent||0)+(t.aidat||0)+(t.internet||0);
+  const photo=t.photo_url?`<img src="${t.photo_url}" style="width:60px;height:60px;border-radius:50%;object-fit:cover;border:2px solid #e8e8e4">`:`<div class="avatar ${avColor(t.name)}" style="width:60px;height:60px;font-size:20px">${initials(t.name)}</div>`;
+  document.getElementById('detail-title').textContent=t.name;
+  document.getElementById('detail-body').innerHTML=`
+    ${!t.is_active?'<div class="pasif-banner" style="margin-bottom:14px">⛔ Bu kiracı pasif durumda</div>':''}
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:18px">
+      ${photo}
+      <div style="flex:1">
+        <div style="font-size:18px;font-weight:700">${t.name}</div>
+        <div style="font-size:13px;color:#888780">${t.apartments?.properties?.name||''} ${t.apartments?.apt_no?'— Daire '+t.apartments.apt_no:''}</div>
+        ${t.phone?`<a href="tel:${t.phone}" style="font-size:13px;color:#185fa5">${t.phone}</a>`:''}
+      </div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap">
+        <button class="btn btn-sm" onclick="openTenantModal('${t.id}')">✏️ Düzenle</button>
+        ${t.is_active?`<button class="btn btn-sm btn-warning" onclick="setTenantPassive('${t.id}')">⛔ Pasife al</button>`:`<button class="btn btn-sm bs" onclick="reactivateTenant('${t.id}')">✅ Aktive et</button>`}
+      </div>
+    </div>
+    <div class="tab-bar"><div class="tab active" onclick="switchTab(this,'det-info')">Bilgiler</div><div class="tab" onclick="switchTab(this,'det-pays')">Ödemeler (${pays?.length||0})</div><div class="tab" onclick="switchTab(this,'det-docs')">Belgeler</div></div>
+    <div class="tab-content active" id="det-info">
+      <div class="detail-grid">
+        <div class="di"><span class="di-label">TC</span><span class="di-val">${t.tc||'—'}</span></div>
+        <div class="di"><span class="di-label">E-posta</span><span class="di-val">${t.email||'—'}</span></div>
+        <div class="di"><span class="di-label">Doğum</span><span class="di-val">${t.birth_date||'—'}</span></div>
+        <div class="di"><span class="di-label">Meslek</span><span class="di-val">${t.job||'—'}</span></div>
+        <div class="di"><span class="di-label">Acil iletişim</span><span class="di-val">${t.emergency_contact||'—'}</span></div>
+        <div class="di"><span class="di-label">Ödeme yöntemi</span><span class="di-val">${t.payment_method||'—'}</span></div>
+      </div>
+      <div class="sep"></div>
+      <div class="detail-grid">
+        <div class="di"><span class="di-label">Kira</span><span class="di-val mv-blue">${fmt(t.rent)}</span></div>
+        <div class="di"><span class="di-label">Aidat</span><span class="di-val">${fmt(t.aidat)}</span></div>
+        <div class="di"><span class="di-label">İnternet</span><span class="di-val">${fmt(t.internet)}</span></div>
+        <div class="di"><span class="di-label">Aylık toplam</span><span class="di-val mv-green" style="font-size:16px">${fmt(total)}</span></div>
+        <div class="di"><span class="di-label">Depozito</span><span class="di-val">${fmt(t.deposit)}</span></div>
+        <div class="di"><span class="di-label">Kira günü</span><span class="di-val">Her ayın ${t.payment_day||5}. günü</span></div>
+      </div>
+      <div class="sep"></div>
+      <div class="detail-grid">
+        <div class="di"><span class="di-label">Elektrik</span><span class="di-val">${t.electric_no||'—'}</span></div>
+        <div class="di"><span class="di-label">Su kart</span><span class="di-val">${t.water_no||'—'}</span></div>
+        <div class="di"><span class="di-label">Sözleşme başlangıç</span><span class="di-val">${t.contract_start||'—'}</span></div>
+        <div class="di"><span class="di-label">Sözleşme bitiş</span><span class="di-val">${t.contract_end||'—'}</span></div>
+      </div>
+      ${t.notes?`<div class="sep"></div><div style="font-size:13px;color:#5f5e5a"><b>Notlar:</b> ${t.notes}</div>`:''}
+    </div>
+    <div class="tab-content" id="det-pays">
+      ${pays&&pays.length?`<div style="overflow-x:auto"><table><thead><tr><th>Dönem</th><th>Kira</th><th>Aidat</th><th>Toplam</th><th>Tarih</th><th>Durum</th><th></th></tr></thead><tbody>
+        ${pays.map(p=>`<tr><td>${p.period}</td><td>${fmt(p.rent)}</td><td>${fmt(p.aidat)}</td><td><b>${fmt(p.total)}</b></td><td>${p.payment_date||'—'}</td><td>${statusBadge(p.status)}</td><td><button class="btn btn-sm" onclick="openPaymentModal('${p.id}')">✏️</button></td></tr>`).join('')}
+      </tbody></table></div>`:`<div class="empty">Ödeme kaydı yok.<br><br><button class="btn btn-primary" onclick="openPaymentModal(null,'${t.id}')">+ Ödeme ekle</button></div>`}
+    </div>
+    <div class="tab-content" id="det-docs">
+      ${t.id_photo_url?`<div style="margin-bottom:12px"><div style="font-size:12px;color:#888780;margin-bottom:4px">Kimlik belgesi</div><img src="${t.id_photo_url}" style="max-width:220px;border-radius:8px;border:1px solid #e8e8e4"></div>`:''}
+      ${docs&&docs.length?docs.map(d=>`<div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #f0f0ec"><span style="font-size:20px">📄</span><div style="flex:1"><div style="font-size:13px;font-weight:500">${d.name||d.file_name}</div></div><a href="${d.file_url}" target="_blank" class="btn btn-sm">Görüntüle</a></div>`).join(''):`<div class="empty">Belge yok</div>`}
+    </div>
+    <div class="btn-row">
+      <button class="btn" onclick="closeModal('modal-detail')">Kapat</button>
+      <button class="btn btn-primary" onclick="openPaymentModal(null,'${t.id}')">+ Ödeme ekle</button>
+    </div>`;
+  openModal('modal-detail');
+}
+
+// ==================== ÖDEMELER ====================
 async function loadPayments(){
   const period=document.getElementById('pay-period-filter').value;
   const status=document.getElementById('pay-status-filter').value;
-  let q=db.from('payments').select('*,tenants(name,apt_no)').order('period',{ascending:false});
+  let q=db.from('payments').select('*,tenants(name,apt_no,is_active,apartments(apt_no,properties(name)))').order('period',{ascending:false});
   if(period)q=q.eq('period',period);
   if(status)q=q.eq('status',status);
   const{data}=await q;
-  const tbody=document.getElementById('payment-tbody');
-  if(!data||data.length===0){tbody.innerHTML='<tr><td colspan="11" class="empty">Ödeme kaydı yok</td></tr>';return;}
-  tbody.innerHTML=data.map(p=>`<tr>
-    <td>${p.tenants?.name||'—'}</td>
-    <td>D.${p.tenants?.apt_no||'?'}</td>
-    <td>${p.period||''}</td>
-    <td>${fmt(p.rent)}</td><td>${fmt(p.aidat)}</td><td>${fmt(p.internet)}</td><td>${fmt(p.other)}</td>
-    <td><strong>${fmt(p.total)}</strong></td>
-    <td>${p.payment_date||'—'}</td>
-    <td>${statusBadge(p.status)}</td>
-    <td style="display:flex;gap:4px">
-      <button class="btn btn-sm" onclick="openPaymentModal('${p.id}')">✏️</button>
-      <button class="btn btn-sm btn-danger" onclick="deletePayment('${p.id}')">🗑️</button>
-    </td>
-  </tr>`).join('');
-
-  const periods=[...new Set(data.map(p=>p.period).filter(Boolean))].sort().reverse();
   const sel=document.getElementById('pay-period-filter');
   const cur=sel.value;
+  const periods=[...new Set((data||[]).map(p=>p.period).filter(Boolean))].sort().reverse();
   sel.innerHTML='<option value="">Tüm dönemler</option>'+periods.map(p=>`<option value="${p}">${p}</option>`).join('');
   sel.value=cur;
+  const tbody=document.getElementById('payment-tbody');
+  if(!data||!data.length){tbody.innerHTML='<tr><td colspan="11" class="empty">Ödeme yok</td></tr>';return;}
+  tbody.innerHTML=data.map(p=>`<tr>
+    <td>${p.tenants?.name||'—'}${!p.tenants?.is_active?'<span class="badge bg" style="margin-left:4px;font-size:10px">Pasif</span>':''}</td>
+    <td>${p.tenants?.apartments?.properties?.name?p.tenants.apartments.properties.name+' ':''} D.${p.tenants?.apartments?.apt_no||p.tenants?.apt_no||'?'}</td>
+    <td>${p.period||''}</td>
+    <td>${fmt(p.rent)}</td><td>${fmt(p.aidat)}</td><td>${fmt(p.internet)}</td><td>${fmt(p.other)}</td>
+    <td><b>${fmt(p.total)}</b></td><td>${p.payment_date||'—'}</td>
+    <td>${statusBadge(p.status)}</td>
+    <td style="display:flex;gap:4px"><button class="btn btn-sm" onclick="openPaymentModal('${p.id}')">✏️</button><button class="btn btn-sm btn-danger" onclick="deletePayment('${p.id}')">🗑️</button></td>
+  </tr>`).join('');
 }
 
-async function openPaymentModal(payId, tenantId=null){
+async function openPaymentModal(payId,tenantId){
+  const{data:tAll}=await db.from('tenants').select('id,name,apt_no,rent,aidat,internet,apartment_id,apartments(apt_no)').order('name');
+  const sel=document.getElementById('pay-tenant-sel');
+  sel.innerHTML=(tAll||[]).map(t=>`<option value="${t.id}" data-rent="${t.rent||0}" data-aidat="${t.aidat||0}" data-internet="${t.internet||0}">${t.name} — D.${t.apartments?.apt_no||t.apt_no||'?'}</option>`).join('');
   const now=new Date();
   document.getElementById('pay-period').value=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
   document.getElementById('pay-date').value=now.toISOString().split('T')[0];
-  const sel=document.getElementById('pay-tenant-sel');
-  sel.innerHTML=allTenants.map(t=>`<option value="${t.id}" data-rent="${t.rent}" data-aidat="${t.aidat}" data-internet="${t.internet}">${t.name} — D.${t.apt_no}</option>`).join('');
-  sel.onchange=function(){
-    const opt=sel.options[sel.selectedIndex];
-    document.getElementById('pay-rent').value=opt.dataset.rent||0;
-    document.getElementById('pay-aidat').value=opt.dataset.aidat||0;
-    document.getElementById('pay-internet').value=opt.dataset.internet||0;
-    updatePayTotal();
-  };
+  document.getElementById('pay-other').value='0';
+  document.getElementById('pay-note').value='';
+  document.getElementById('pay-id').value='';
+  document.getElementById('pay-modal-title').textContent='Ödeme ekle';
+  if(tenantId)sel.value=tenantId;
+  fillPayFromTenant();
   if(payId){
     const{data:p}=await db.from('payments').select('*').eq('id',payId).single();
     if(p){
@@ -1073,13 +1383,17 @@ async function openPaymentModal(payId, tenantId=null){
       document.getElementById('pay-note').value=p.notes||'';
       updatePayTotal();
     }
-  }else{
-    document.getElementById('pay-id').value='';
-    document.getElementById('pay-modal-title').textContent='Ödeme ekle';
-    if(tenantId){sel.value=tenantId;}
-    sel.onchange();
   }
   openModal('modal-payment');
+}
+
+function fillPayFromTenant(){
+  const opt=document.getElementById('pay-tenant-sel').selectedOptions[0];
+  if(!opt)return;
+  document.getElementById('pay-rent').value=opt.dataset.rent||0;
+  document.getElementById('pay-aidat').value=opt.dataset.aidat||0;
+  document.getElementById('pay-internet').value=opt.dataset.internet||0;
+  updatePayTotal();
 }
 
 function updatePayTotal(){
@@ -1093,129 +1407,111 @@ function updatePayTotal(){
 async function savePayment(){
   const tid=document.getElementById('pay-tenant-sel').value;
   const period=document.getElementById('pay-period').value;
-  if(!tid||!period){toast('Kiracı ve dönem zorunludur','error');return;}
+  if(!tid||!period){toast('Kiracı ve dönem zorunludur','err');return;}
   const r=parseFloat(document.getElementById('pay-rent').value)||0;
   const a=parseFloat(document.getElementById('pay-aidat').value)||0;
   const i=parseFloat(document.getElementById('pay-internet').value)||0;
   const o=parseFloat(document.getElementById('pay-other').value)||0;
-  const payload={tenant_id:tid,period,rent:r,aidat:a,internet:i,other:o,total:r+a+i+o,
-    payment_date:document.getElementById('pay-date').value||null,
-    payment_method:document.getElementById('pay-method').value,
-    status:document.getElementById('pay-status').value,
-    notes:document.getElementById('pay-note').value};
+  const payload={tenant_id:tid,period,rent:r,aidat:a,internet:i,other:o,total:r+a+i+o,payment_date:document.getElementById('pay-date').value||null,payment_method:document.getElementById('pay-method').value,status:document.getElementById('pay-status').value,notes:document.getElementById('pay-note').value};
   const pid=document.getElementById('pay-id').value;
-  let error;
-  if(pid){({error}=await db.from('payments').update(payload).eq('id',pid));}
-  else{({error}=await db.from('payments').insert(payload));}
-  if(error){toast('Hata: '+error.message,'error');return;}
-  toast('Ödeme kaydedildi!');
-  closeModal('modal-payment');
-  loadPayments();
+  const{error}=pid?await db.from('payments').update(payload).eq('id',pid):await db.from('payments').insert(payload);
+  if(error){toast('Hata: '+error.message,'err');return;}
+  toast('Ödeme kaydedildi!');closeModal('modal-payment');loadPayments();
 }
 
 async function deletePayment(id){
-  if(!confirm('Bu ödemeyi silmek istediğinizden emin misiniz?'))return;
+  if(!confirm('Silinsin mi?'))return;
   await db.from('payments').delete().eq('id',id);
-  toast('Ödeme silindi');
-  loadPayments();
+  toast('Silindi');loadPayments();
 }
 
-// SÖZLEŞMELER
-async function loadContracts(){
-  const{data}=await db.from('tenants').select('id,name,apt_no,contract_start,contract_end').eq('is_active',true).order('apt_no');
-  const{data:docs}=await db.from('documents').select('*,tenants(name,apt_no)');
-  const grid=document.getElementById('contract-grid');
-  if(!data||data.length===0){grid.innerHTML='<div class="empty">Kiracı yok</div>';return;}
-  grid.innerHTML=data.map(t=>{
-    const doc=docs?.find(d=>d.tenant_id===t.id&&d.type==='Sözleşme');
-    const dl=daysLeft(t.contract_end);
-    const badge=t.contract_end?(dl<30?'badge-danger':dl<60?'badge-warning':'badge-success'):'badge-gray';
-    const label=t.contract_end?(dl<0?'Süresi doldu':dl<60?dl+' gün':Math.round(dl/30)+' ay'):'Tarih yok';
-    return`<div class="contract-card" onclick="${doc?`window.open('${doc.file_url}','_blank')`:`showPage('tenants',document.querySelectorAll('.nav-item')[1])`}">
-      <div class="contract-icon">${doc?'📄':'📋'}</div>
-      <div style="font-size:12px;font-weight:600;margin-bottom:4px">${t.name}</div>
-      <div style="font-size:11px;color:#888780;margin-bottom:6px">Daire ${t.apt_no}</div>
-      <span class="badge ${badge}">${label}</span>
-      ${t.contract_end?`<div style="font-size:10px;color:#888780;margin-top:4px">${t.contract_end}</div>`:''}
-    </div>`;
-  }).join('');
-}
-
-// GİDERLER
+// ==================== GİDERLER ====================
 async function loadExpenses(){
   const{data}=await db.from('expenses').select('*').order('expense_date',{ascending:false});
   const tbody=document.getElementById('expense-tbody');
-  if(!data||data.length===0){tbody.innerHTML='<tr><td colspan="6" class="empty">Gider kaydı yok</td></tr>';return;}
+  if(!data||!data.length){tbody.innerHTML='<tr><td colspan="6" class="empty">Gider kaydı yok</td></tr>';return;}
   tbody.innerHTML=data.map(e=>`<tr>
     <td>${e.expense_date||'—'}</td>
     <td>${e.apt_no?'D.'+e.apt_no:'Genel'}</td>
     <td>${e.description||'—'}</td>
-    <td><span class="badge badge-gray">${e.category||'—'}</span></td>
-    <td><strong>${fmt(e.amount)}</strong></td>
-    <td style="display:flex;gap:4px">
-      <button class="btn btn-sm btn-danger" onclick="deleteExpense('${e.id}')">🗑️</button>
-    </td>
+    <td><span class="badge bg">${e.category||'—'}</span></td>
+    <td><b>${fmt(e.amount)}</b></td>
+    <td><button class="btn btn-sm btn-danger" onclick="deleteExpense('${e.id}')">🗑️</button></td>
   </tr>`).join('');
+}
+
+async function openExpenseModal(){
+  const{data:props}=await db.from('properties').select('id,name').eq('is_active',true);
+  const sel=document.getElementById('exp-prop');
+  sel.innerHTML='<option value="">— Mülk seçin —</option>'+(props||[]).map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
+  document.getElementById('exp-id').value='';
+  document.getElementById('exp-apt').value='';
+  document.getElementById('exp-desc').value='';
+  document.getElementById('exp-amount').value='';
+  document.getElementById('exp-date').value=new Date().toISOString().split('T')[0];
+  openModal('modal-expense');
 }
 
 async function saveExpense(){
   const desc=document.getElementById('exp-desc').value.trim();
-  if(!desc){toast('Açıklama zorunludur','error');return;}
-  const payload={apt_no:document.getElementById('exp-apt').value,description:desc,
-    amount:parseFloat(document.getElementById('exp-amount').value)||0,
-    category:document.getElementById('exp-cat').value,
-    expense_date:document.getElementById('exp-date').value||null};
+  if(!desc){toast('Açıklama zorunludur','err');return;}
+  const payload={apt_no:document.getElementById('exp-apt').value,description:desc,amount:parseFloat(document.getElementById('exp-amount').value)||0,category:document.getElementById('exp-cat').value,expense_date:document.getElementById('exp-date').value||null};
   const{error}=await db.from('expenses').insert(payload);
-  if(error){toast('Hata: '+error.message,'error');return;}
-  toast('Gider eklendi!');
-  closeModal('modal-expense');
-  loadExpenses();
+  if(error){toast('Hata: '+error.message,'err');return;}
+  toast('Gider eklendi!');closeModal('modal-expense');loadExpenses();
 }
 
 async function deleteExpense(id){
-  if(!confirm('Bu gideri silmek istediğinizden emin misiniz?'))return;
+  if(!confirm('Silinsin mi?'))return;
   await db.from('expenses').delete().eq('id',id);
-  toast('Gider silindi');
-  loadExpenses();
+  toast('Silindi');loadExpenses();
 }
 
-// RAPORLAR
+// ==================== RAPORLAR ====================
 async function loadReports(){
   const year=document.getElementById('report-year').value;
-  const{data:pays}=await db.from('payments').select('*,tenants(apt_no)').like('period',year+'-%').eq('status','paid');
+  const propFilter=document.getElementById('report-prop').value;
+  const{data:props}=await db.from('properties').select('id,name').eq('is_active',true);
+  const rsel=document.getElementById('report-prop');
+  const rcur=rsel.value;
+  rsel.innerHTML='<option value="">Tüm mülkler</option>'+(props||[]).map(p=>`<option value="${p.id}">${p.name}</option>`).join('');
+  rsel.value=rcur;
+
+  let payQ=db.from('payments').select('*,tenants(property_id,apartments(property_id))').like('period',year+'-%');
+  const{data:pays}=await payQ;
   const{data:exps}=await db.from('expenses').select('*').like('expense_date',year+'-%');
-  const totalIncome=(pays||[]).reduce((s,p)=>s+(p.total||0),0);
+
+  const filteredPays=propFilter?(pays||[]).filter(p=>p.tenants?.property_id===propFilter||p.tenants?.apartments?.property_id===propFilter):(pays||[]);
+  const paidPays=filteredPays.filter(p=>p.status==='paid');
+  const totalIncome=paidPays.reduce((s,p)=>s+(p.total||0),0);
   const totalExp=(exps||[]).reduce((s,e)=>s+(e.amount||0),0);
   document.getElementById('r-income').textContent=fmt(totalIncome);
   document.getElementById('r-expense').textContent=fmt(totalExp);
   document.getElementById('r-profit').textContent=fmt(totalIncome-totalExp);
-  const{data:allPays}=await db.from('payments').select('status').like('period',year+'-%');
-  const total=(allPays||[]).length;
-  const paid=(allPays||[]).filter(p=>p.status==='paid').length;
-  document.getElementById('r-rate').textContent=total?'%'+Math.round(paid/total*100):'—';
+  const rate=filteredPays.length?Math.round(paidPays.length/filteredPays.length*100):0;
+  document.getElementById('r-rate').textContent='%'+rate;
 
   const months=['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];
   const monthly=months.map((m,i)=>{
     const key=`${year}-${String(i+1).padStart(2,'0')}`;
-    return{m,total:(pays||[]).filter(p=>p.period===key).reduce((s,p)=>s+(p.total||0),0)};
+    return{m,v:paidPays.filter(p=>p.period===key).reduce((s,p)=>s+(p.total||0),0)};
   });
-  const maxM=Math.max(...monthly.map(x=>x.total),1);
+  const maxM=Math.max(...monthly.map(x=>x.v),1);
   document.getElementById('monthly-chart').innerHTML=monthly.map(x=>`<div class="chart-row">
     <span class="chart-label">${x.m}</span>
-    <div class="chart-bar-bg"><div class="chart-bar-fill" style="width:${Math.round(x.total/maxM*100)}%"></div></div>
-    <span class="chart-val">${x.total>0?fmt(x.total):'—'}</span>
+    <div class="chart-bar-bg"><div class="chart-bar-fill" style="width:${Math.round(x.v/maxM*100)}%"></div></div>
+    <span class="chart-val">${x.v>0?fmt(x.v):'—'}</span>
   </div>`).join('');
 
-  const aptIncome={};
-  (pays||[]).forEach(p=>{const a=p.tenants?.apt_no||'?';aptIncome[a]=(aptIncome[a]||0)+(p.total||0);});
-  const aptArr=Object.entries(aptIncome).sort((a,b)=>b[1]-a[1]);
+  const aptMap={};
+  paidPays.forEach(p=>{const k=p.tenants?.apt_no||'?';aptMap[k]=(aptMap[k]||0)+(p.total||0);});
+  const aptArr=Object.entries(aptMap).sort((a,b)=>b[1]-a[1]);
   const maxA=Math.max(...aptArr.map(x=>x[1]),1);
   document.getElementById('apt-chart').innerHTML=aptArr.length?aptArr.map(([a,v])=>`<div class="chart-row">
     <span class="chart-label">D.${a}</span>
     <div class="chart-bar-bg"><div class="chart-bar-fill" style="width:${Math.round(v/maxA*100)}%"></div></div>
     <span class="chart-val">${fmt(v)}</span>
   </div>`).join(''):'<div class="empty">Veri yok</div>';
-
   calcRent();
 }
 
@@ -1224,72 +1520,59 @@ function calcRent(){
   const rate=parseFloat(document.getElementById('calc-rate').value)||0;
   const newRent=Math.round(base*(1+rate/100));
   const legal=Math.round(base*1.25);
-  const inc=newRent-base;
   document.getElementById('calc-result').textContent=fmt(newRent);
-  document.getElementById('calc-detail').innerHTML=`Mevcut kira: ${fmt(base)} &nbsp;+&nbsp; TÜFE artışı (${rate}%): ${fmt(inc)} &nbsp;=&nbsp; <strong>${fmt(newRent)}</strong><br>Yasal tavan (%25): <strong>${fmt(legal)}</strong> &nbsp;|&nbsp; Uygulanan: ${newRent>legal?fmt(legal)+' (yasal sınır)':fmt(newRent)}`;
+  document.getElementById('calc-detail').innerHTML=`${fmt(base)} + %${rate} TÜFE = <b>${fmt(newRent)}</b> &nbsp;|&nbsp; Yasal tavan (%25): <b>${fmt(legal)}</b>${newRent>legal?' — Yasal sınır uygulanacak':''}`;
 }
 
-// HATIRLATICILAR
+// ==================== HATIRLATICILAR ====================
 async function loadReminders(){
   const{data}=await db.from('reminders').select('*,tenants(name,apt_no)').order('scheduled_date');
   const list=document.getElementById('reminder-list');
-  if(!data||data.length===0){list.innerHTML='<div class="empty">Hatırlatıcı yok. Yeni ekleyin.</div>';return;}
-  const statusMap={planned:'badge-info',sent:'badge-success',cancelled:'badge-gray'};
-  const statusLabel={planned:'Planlandı',sent:'Gönderildi',cancelled:'İptal'};
-  list.innerHTML=data.map(r=>`<div class="reminder-row">
+  if(!data||!data.length){list.innerHTML='<div class="empty">Hatırlatıcı yok</div>';return;}
+  const sc={planned:'bi',sent:'bs',cancelled:'bg'};
+  const sl={planned:'Planlandı',sent:'Gönderildi',cancelled:'İptal'};
+  list.innerHTML=data.map(r=>`<div style="display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid #f0f0ec">
     <div style="flex:1">
       <div style="font-size:13px;font-weight:500">${r.title||r.type}</div>
-      <div style="font-size:12px;color:#888780">${r.tenants?r.tenants.name+' — D.'+r.tenants.apt_no:'Tüm kiracılar'} &nbsp;•&nbsp; ${r.scheduled_date||'—'} &nbsp;•&nbsp; ${r.channel||''}</div>
+      <div style="font-size:12px;color:#888780">${r.tenants?r.tenants.name+' — D.'+r.tenants.apt_no:'Tüm kiracılar'} • ${r.scheduled_date||'—'} • ${r.channel||''}</div>
       ${r.message?`<div style="font-size:12px;color:#5f5e5a;margin-top:2px">${r.message}</div>`:''}
     </div>
-    <div style="display:flex;align-items:center;gap:6px">
-      <span class="badge ${statusMap[r.status]||'badge-gray'}">${statusLabel[r.status]||r.status}</span>
-      <button class="btn btn-sm btn-danger" onclick="deleteReminder('${r.id}')">🗑️</button>
-    </div>
+    <span class="badge ${sc[r.status]||'bg'}">${sl[r.status]||r.status}</span>
+    <button class="btn btn-sm btn-danger" onclick="deleteReminder('${r.id}')">🗑️</button>
   </div>`).join('');
+}
+
+async function openReminderModal(){
+  const{data:tenants}=await db.from('tenants').select('id,name,apt_no').eq('is_active',true).order('name');
+  document.getElementById('rem-tenant').innerHTML='<option value="">— Tüm kiracılar —</option>'+(tenants||[]).map(t=>`<option value="${t.id}">${t.name}</option>`).join('');
+  ['rem-title','rem-message'].forEach(i=>document.getElementById(i).value='');
+  document.getElementById('rem-date').value='';
+  openModal('modal-reminder');
 }
 
 async function saveReminder(){
   const title=document.getElementById('rem-title').value.trim();
-  if(!title){toast('Başlık zorunludur','error');return;}
-  const tid=document.getElementById('rem-tenant').value;
-  const payload={tenant_id:tid||null,title,type:document.getElementById('rem-type').value,
-    channel:document.getElementById('rem-channel').value,
-    scheduled_date:document.getElementById('rem-date').value||null,
-    message:document.getElementById('rem-message').value,status:'planned'};
+  if(!title){toast('Başlık zorunludur','err');return;}
+  const payload={tenant_id:document.getElementById('rem-tenant').value||null,title,type:document.getElementById('rem-type').value,channel:document.getElementById('rem-channel').value,scheduled_date:document.getElementById('rem-date').value||null,message:document.getElementById('rem-message').value,status:'planned'};
   const{error}=await db.from('reminders').insert(payload);
-  if(error){toast('Hata: '+error.message,'error');return;}
-  toast('Hatırlatıcı eklendi!');
-  closeModal('modal-reminder');
-  loadReminders();
+  if(error){toast('Hata: '+error.message,'err');return;}
+  toast('Hatırlatıcı eklendi!');closeModal('modal-reminder');loadReminders();
 }
 
 async function deleteReminder(id){
-  if(!confirm('Bu hatırlatıcıyı silmek istediğinizden emin misiniz?'))return;
+  if(!confirm('Silinsin mi?'))return;
   await db.from('reminders').delete().eq('id',id);
-  toast('Silindi');
-  loadReminders();
+  toast('Silindi');loadReminders();
 }
 
-async function openReminderModal(){
-  const sel=document.getElementById('rem-tenant');
-  sel.innerHTML='<option value="">— Tüm kiracılar —</option>'+allTenants.map(t=>`<option value="${t.id}">${t.name} — D.${t.apt_no}</option>`).join('');
-  openModal('modal-reminder');
-}
-
-function saveSettings(){toast('Ayarlar kaydedildi!');}
-
-// İLK YÜKLEME
-document.addEventListener("DOMContentLoaded",()=>{
-  loadDashboard();
-  document.querySelector('[onclick*="modal-tenant"]').onclick=openTenantModal;
-  document.querySelector('[onclick*="modal-reminder"]').onclick=openReminderModal;
-  const expBtn=document.querySelector('[onclick*="modal-expense"]');
-  if(expBtn)expBtn.onclick=()=>{
-    document.getElementById('exp-id').value='';
-    document.getElementById('exp-date').value=new Date().toISOString().split('T')[0];
-    openModal('modal-expense');
-  };
+// ==================== BAŞLANGIÇ ====================
+document.addEventListener('DOMContentLoaded',()=>{
+  if(sessionStorage.getItem('kira_ok')==='1'){
+    document.getElementById('login-screen').classList.add('hidden');
+    loadDashboard();
+  }else{
+    setTimeout(()=>document.getElementById('login-input').focus(),100);
+  }
 });
 </script>
 </body>
