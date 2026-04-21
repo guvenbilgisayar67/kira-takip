@@ -724,6 +724,16 @@ textarea{resize:vertical;min-height:70px}
           <div class="form-group"><label>Sözleşme başlangıç</label><input id="t-cstart" type="date"></div>
           <div class="form-group"><label>Sözleşme bitiş</label><input id="t-cend" type="date"></div>
           <div class="form-group"><label>Depozito (₺)</label><input id="t-deposit" type="number"></div>
+          <div class="form-group"><label>Depozito taksit sayısı</label>
+            <select id="t-deposit-inst">
+              <option value="1">Tek seferde</option>
+              <option value="2">2 taksit</option>
+              <option value="3">3 taksit</option>
+              <option value="4">4 taksit</option>
+              <option value="5">5 taksit</option>
+              <option value="6">6 taksit</option>
+            </select>
+          </div>
           <div class="form-group"><label>Ödeme yöntemi</label>
             <select id="t-paymethod"><option>Havale</option><option>EFT</option><option>Nakit</option></select>
           </div>
@@ -819,6 +829,40 @@ textarea{resize:vertical;min-height:70px}
       <div class="btn-row">
         <button class="btn" onclick="closeModal('modal-expense')">İptal</button>
         <button class="btn btn-primary" onclick="saveExpense()">Kaydet</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- DEPOZİTO MODAL -->
+<div class="overlay" id="modal-depo">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">Depozito düzenle</span>
+      <button class="close-btn" onclick="closeModal('modal-depo')">×</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="depo-tenant-id">
+      <div class="form-grid">
+        <div class="form-group fg1"><label>Toplam depozito (₺)</label><input id="depo-amount" type="number" oninput="updateDepoPreview()"></div>
+        <div class="form-group fg1"><label>Taksit sayısı</label>
+          <select id="depo-inst" onchange="updateDepoPreview()">
+            <option value="1">Tek seferde</option>
+            <option value="2">2 taksit</option>
+            <option value="3">3 taksit</option>
+            <option value="4">4 taksit</option>
+            <option value="5">5 taksit</option>
+            <option value="6">6 taksit</option>
+          </select>
+        </div>
+      </div>
+      <div class="rent-calc" id="depo-preview" style="margin-top:12px"></div>
+      <div style="background:#faeeda;border-radius:8px;padding:10px 14px;font-size:12px;color:#633806;margin-top:10px">
+        ⚠️ Değişiklik kaydedildiğinde mevcut depozito ödeme kayıtları güncellenmez, yeni plan oluşturulur.
+      </div>
+      <div class="btn-row">
+        <button class="btn" onclick="closeModal('modal-depo')">İptal</button>
+        <button class="btn btn-primary" onclick="saveDepo()">Kaydet</button>
       </div>
     </div>
   </div>
@@ -1379,6 +1423,7 @@ async function openTenantModal(id,preselectedAptId){
   document.getElementById('tenant-modal-title').textContent=id?'Kiracıyı düzenle':'Yeni kiracı';
   ['t-name','t-tc','t-phone','t-email','t-job','t-emergency','t-notes','t-electric','t-water'].forEach(i=>document.getElementById(i).value='');
   ['t-rent','t-aidat','t-internet','t-deposit','t-payDay'].forEach(i=>document.getElementById(i).value='');
+  document.getElementById('t-deposit-inst').value='1';
   document.getElementById('t-birth').value='';
   document.getElementById('t-cstart').value='';
   document.getElementById('t-cend').value='';
@@ -1419,6 +1464,7 @@ async function openTenantModal(id,preselectedAptId){
       document.getElementById('t-cstart').value=t.contract_start||'';
       document.getElementById('t-cend').value=t.contract_end||'';
       document.getElementById('t-deposit').value=t.deposit||'';
+      document.getElementById('t-deposit-inst').value=t.deposit_installments||1;
       document.getElementById('t-paymethod').value=t.payment_method||'Havale';
       if(t.property_id){sel.value=t.property_id;await loadApartmentsForTenant();if(t.apartment_id)document.getElementById('t-apt-sel').value=t.apartment_id;}
       if(t.photo_url){document.getElementById('t-photo-prev').src=t.photo_url;document.getElementById('t-photo-prev').style.display='block';document.getElementById('t-photo-ph').style.display='none';}
@@ -1455,7 +1501,7 @@ async function saveTenant(){
     if(tenantContractFile)contractUrl=await uploadFile(tenantContractFile,'contracts');
     const aptId=document.getElementById('t-apt-sel').value||null;
     const propId=document.getElementById('t-prop-sel').value||null;
-    const payload={name,tc:document.getElementById('t-tc').value,phone:document.getElementById('t-phone').value,email:document.getElementById('t-email').value,birth_date:document.getElementById('t-birth').value||null,job:document.getElementById('t-job').value,emergency_contact:document.getElementById('t-emergency').value,notes:document.getElementById('t-notes').value,apartment_id:aptId,property_id:propId,apt_no:null,rent:parseFloat(document.getElementById('t-rent').value)||0,aidat:parseFloat(document.getElementById('t-aidat').value)||0,internet:parseFloat(document.getElementById('t-internet').value)||0,payment_day:parseInt(document.getElementById('t-payDay').value)||5,electric_no:document.getElementById('t-electric').value,water_no:document.getElementById('t-water').value,contract_start:document.getElementById('t-cstart').value||null,contract_end:document.getElementById('t-cend').value||null,deposit:parseFloat(document.getElementById('t-deposit').value)||0,payment_method:document.getElementById('t-paymethod').value,is_active:true};
+    const payload={name,tc:document.getElementById('t-tc').value,phone:document.getElementById('t-phone').value,email:document.getElementById('t-email').value,birth_date:document.getElementById('t-birth').value||null,job:document.getElementById('t-job').value,emergency_contact:document.getElementById('t-emergency').value,notes:document.getElementById('t-notes').value,apartment_id:aptId,property_id:propId,apt_no:null,rent:parseFloat(document.getElementById('t-rent').value)||0,aidat:parseFloat(document.getElementById('t-aidat').value)||0,internet:parseFloat(document.getElementById('t-internet').value)||0,payment_day:parseInt(document.getElementById('t-payDay').value)||5,electric_no:document.getElementById('t-electric').value,water_no:document.getElementById('t-water').value,contract_start:document.getElementById('t-cstart').value||null,contract_end:document.getElementById('t-cend').value||null,deposit:parseFloat(document.getElementById('t-deposit').value)||0,deposit_installments:parseInt(document.getElementById('t-deposit-inst').value)||1,payment_method:document.getElementById('t-paymethod').value,is_active:true};
     if(photo_url)payload.photo_url=photo_url;
     if(id_photo_url)payload.id_photo_url=id_photo_url;
     const tid=document.getElementById('tenant-id').value;
@@ -1804,6 +1850,56 @@ async function deleteReminder(id){
   toast('Silindi');loadReminders();
 }
 
+function openDepoModal(tid,deposit,inst){
+  document.getElementById('depo-tenant-id').value=tid;
+  document.getElementById('depo-amount').value=deposit;
+  document.getElementById('depo-inst').value=inst||1;
+  updateDepoPreview();
+  openModal('modal-depo');
+}
+
+function updateDepoPreview(){
+  const amount=parseFloat(document.getElementById('depo-amount').value)||0;
+  const inst=parseInt(document.getElementById('depo-inst').value)||1;
+  const taksit=inst>1?Math.round(amount/inst):amount;
+  const el=document.getElementById('depo-preview');
+  if(inst===1){
+    el.innerHTML=`Toplam <strong>${fmt(amount)}</strong> tek seferde tahsil edilecek.`;
+  }else{
+    el.innerHTML=`Toplam <strong>${fmt(amount)}</strong> → ${inst} taksit × <strong>${fmt(taksit)}</strong> = ${fmt(taksit*inst)} TL <br>
+    <span style="font-size:11px;opacity:0.8">(Yuvarlama farkı: ${fmt(amount-taksit*inst)})</span>`;
+  }
+}
+
+async function saveDepo(){
+  const tid=document.getElementById('depo-tenant-id').value;
+  const amount=parseFloat(document.getElementById('depo-amount').value)||0;
+  const inst=parseInt(document.getElementById('depo-inst').value)||1;
+  const{error}=await db.from('tenants').update({deposit:amount,deposit_installments:inst}).eq('id',tid);
+  if(error){toast('Hata: '+error.message,'err');return;}
+  toast('Depozito güncellendi!');
+  closeModal('modal-depo');
+  loadPayPlan();
+}
+
+async function markDepoPaid(tid,period,existingId,tutar){
+  if(existingId&&existingId!==''){
+    // Zaten var, ödeme modalını aç
+    openPaymentModal(existingId,tid);
+    return;
+  }
+  // Yeni depozito ödemesi oluştur
+  const today=new Date().toISOString().split('T')[0];
+  const{error}=await db.from('payments').insert({
+    tenant_id:tid,period,rent:0,aidat:0,internet:0,other:tutar,total:tutar,
+    payment_date:today,payment_method:'Havale',status:'paid',
+    payment_type:'depozito',notes:'Depozito taksit ödemesi'
+  });
+  if(error){toast('Hata: '+error.message,'err');return;}
+  toast('Depozito taksiti ödendi olarak işlendi!');
+  loadPayPlan();
+}
+
 // ==================== KİRACı TABLOLARI ====================
 async function initPayPlan(){
   const{data:tenants}=await db.from('tenants').select('id,name,apt_no,rent,aidat,internet,contract_start,payment_day,apartments(apt_no,properties(name))').order('name');
@@ -1822,42 +1918,77 @@ async function loadPayPlan(){
 
   const{data:pays}=await db.from('payments').select('*').eq('tenant_id',tid).order('period');
   const paidMap={};
-  (pays||[]).forEach(p=>{paidMap[p.period]=p;});
+  (pays||[]).forEach(p=>{
+    const key=p.period+(p.payment_type==='depozito'?'_dep':'_kira');
+    paidMap[key]=p;
+  });
 
   const start=t.contract_start?new Date(t.contract_start):new Date();
   const end=t.contract_end?new Date(t.contract_end):new Date(start.getFullYear()+1,start.getMonth(),start.getDate());
   const payDay=t.payment_day||parseInt(t.contract_start?.split('-')[2])||1;
   const today=new Date();
-  const total=(t.rent||0)+(t.aidat||0)+(t.internet||0);
+  const kiraTotal=(t.rent||0)+(t.aidat||0)+(t.internet||0);
+  const depInst=t.deposit_installments||1;
+  const depTaksit=depInst>1?Math.round((t.deposit||0)/depInst):0;
 
   // Tüm ayları üret
   let rows=[];
   let cur=new Date(start.getFullYear(),start.getMonth(),1);
   const endMonth=new Date(end.getFullYear(),end.getMonth(),1);
   let taksitNo=1;
+
   while(cur<=endMonth){
     const period=`${cur.getFullYear()}-${String(cur.getMonth()+1).padStart(2,'0')}`;
     const dueDate=new Date(cur.getFullYear(),cur.getMonth(),payDay);
-    const pay=paidMap[period];
-    let durum,durumTr,rowClass;
-    if(pay&&pay.status==='paid'){durum='paid';durumTr='✅ Ödendi';rowClass='pp-row-paid';}
-    else if(pay&&pay.status==='late'){durum='late';durumTr='❌ Gecikmeli';rowClass='pp-row-late';}
-    else if(dueDate<today&&!pay){durum='late';durumTr='❌ Ödenmedi';rowClass='pp-row-late';}
-    else if(pay&&pay.status==='pending'){durum='pending';durumTr='⏳ Bekliyor';rowClass='pp-row-future';}
-    else{durum='future';durumTr='🕐 Bekleniyor';rowClass='pp-row-future';}
 
-    if(yearFilter==='all'||cur.getFullYear().toString()===yearFilter){
-      rows.push({period,dueDate,pay,durum,durumTr,rowClass,taksitNo,
-        odenenTutar:pay?pay.total:null,
-        odenmeTarihi:pay?.payment_date||null});
+    // Kira satırı
+    const kiraPay=paidMap[period+'_kira']||paidMap[period];
+    let kiraDurum,kiraDurumTr,kiraClass;
+    if(kiraPay&&kiraPay.status==='paid'){kiraDurum='paid';kiraDurumTr='✅ Ödendi';kiraClass='pp-row-paid';}
+    else if(kiraPay&&kiraPay.status==='late'){kiraDurum='late';kiraDurumTr='❌ Gecikmeli';kiraClass='pp-row-late';}
+    else if(dueDate<today&&!kiraPay){kiraDurum='late';kiraDurumTr='❌ Ödenmedi';kiraClass='pp-row-late';}
+    else if(kiraPay&&kiraPay.status==='pending'){kiraDurum='pending';kiraDurumTr='⏳ Bekliyor';kiraClass='pp-row-future';}
+    else{kiraDurum='future';kiraDurumTr='🕐 Bekleniyor';kiraClass='pp-row-future';}
+
+    const showYear=yearFilter==='all'||cur.getFullYear().toString()===yearFilter;
+    if(showYear){
+      rows.push({
+        period,dueDate,pay:kiraPay,durum:kiraDurum,durumTr:kiraDurumTr,rowClass:kiraClass,
+        taksitNo,tip:'Kira',tutar:kiraPay?.total||kiraTotal,
+        odenmeTarihi:kiraPay?.payment_date||null,
+        yontem:kiraPay?.payment_method||'—',
+        isDepo:false
+      });
+
+      // Depozito taksit satırı (sadece ilk N ay)
+      if(depInst>1&&taksitNo<=depInst){
+        const depPay=paidMap[period+'_dep'];
+        let depDurum,depDurumTr,depClass;
+        if(depPay&&depPay.status==='paid'){depDurum='paid';depDurumTr='✅ Ödendi';depClass='pp-row-paid';}
+        else if(dueDate<today&&!depPay){depDurum='late';depDurumTr='❌ Ödenmedi';depClass='pp-row-late';}
+        else{depDurum='future';depDurumTr='🕐 Bekleniyor';depClass='pp-row-future';}
+        rows.push({
+          period,dueDate,pay:depPay,durum:depDurum,durumTr:depDurumTr,rowClass:depClass,
+          taksitNo:`D-${taksitNo}`,tip:`Depozito (${taksitNo}/${depInst})`,tutar:depTaksit,
+          odenmeTarihi:depPay?.payment_date||null,
+          yontem:depPay?.payment_method||'—',
+          isDepo:true,
+          depPayId:depPay?.id||null,
+          depPeriod:period
+        });
+      }
     }
     taksitNo++;
     cur=new Date(cur.getFullYear(),cur.getMonth()+1,1);
   }
 
-  const totalOdenen=rows.filter(r=>r.durum==='paid').reduce((s,r)=>s+(r.odenenTutar||total),0);
-  const totalOdenmemis=rows.filter(r=>r.durum==='late').length*(total);
-  const totalBekleyen=rows.filter(r=>r.durum==='future'||r.durum==='pending').length*(total);
+  const kiraRows=rows.filter(r=>!r.isDepo);
+  const depoRows=rows.filter(r=>r.isDepo);
+  const totalOdenen=kiraRows.filter(r=>r.durum==='paid').reduce((s,r)=>s+(r.tutar||0),0);
+  const totalOdenmemis=kiraRows.filter(r=>r.durum==='late').length*kiraTotal;
+  const totalBekleyen=kiraRows.filter(r=>r.durum==='future'||r.durum==='pending').length*kiraTotal;
+  const depoOdenen=depoRows.filter(r=>r.durum==='paid').reduce((s,r)=>s+(r.tutar||0),0);
+  const depoKalan=depoRows.filter(r=>r.durum!=='paid').reduce((s,r)=>s+(r.tutar||0),0);
   const propName=t.apartments?.properties?.name||'';
   const aptNo=t.apartments?.apt_no||t.apt_no||'?';
 
@@ -1868,27 +1999,29 @@ async function loadPayPlan(){
     </div>
 
     <div class="card" style="margin-bottom:16px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+        <div class="section-title" style="margin:0">Kiracı bilgileri</div>
+        <button class="btn btn-sm btn-warning" onclick="openDepoModal('${t.id}',${t.deposit||0},${depInst})">⚙️ Depozito düzenle</button>
+      </div>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px">
-        <div class="di"><span class="di-label">Kiracı</span><span class="di-val" style="font-size:16px;font-weight:700">${t.name}</span></div>
+        <div class="di"><span class="di-label">Kiracı</span><span class="di-val" style="font-size:15px;font-weight:700">${t.name}</span></div>
         <div class="di"><span class="di-label">Mülk / Daire</span><span class="di-val">${propName?propName+' — ':''} Daire ${aptNo}</span></div>
         <div class="di"><span class="di-label">Telefon</span><span class="di-val">${t.phone||'—'}</span></div>
         <div class="di"><span class="di-label">TC Kimlik</span><span class="di-val">${t.tc||'—'}</span></div>
         <div class="di"><span class="di-label">Sözleşme başlangıç</span><span class="di-val">${t.contract_start||'—'}</span></div>
         <div class="di"><span class="di-label">Sözleşme bitiş</span><span class="di-val">${t.contract_end||'—'}</span></div>
-        <div class="di"><span class="di-label">Kira bedeli</span><span class="di-val mv-blue">${fmt(t.rent)}</span></div>
-        <div class="di"><span class="di-label">Aidat</span><span class="di-val">${fmt(t.aidat)}</span></div>
-        <div class="di"><span class="di-label">İnternet</span><span class="di-val">${fmt(t.internet)}</span></div>
-        <div class="di"><span class="di-label">Aylık toplam</span><span class="di-val mv-green" style="font-size:16px;font-weight:700">${fmt(total)}</span></div>
+        <div class="di"><span class="di-label">Aylık kira</span><span class="di-val mv-blue">${fmt(t.rent)}</span></div>
+        <div class="di"><span class="di-label">Aylık toplam</span><span class="di-val mv-green" style="font-size:15px;font-weight:700">${fmt(kiraTotal)}</span></div>
+        <div class="di"><span class="di-label">Depozito</span><span class="di-val">${fmt(t.deposit)} ${depInst>1?`<span class="badge bw">${depInst} taksit / ${fmt(depTaksit)}</span>`:''}</span></div>
         <div class="di"><span class="di-label">Ödeme günü</span><span class="di-val">Her ayın ${payDay}. günü</span></div>
-        <div class="di"><span class="di-label">Depozito</span><span class="di-val">${fmt(t.deposit)}</span></div>
       </div>
     </div>
 
     <div class="metric-grid" style="margin-bottom:16px">
-      <div class="metric" style="background:#eaf3de"><div class="metric-label">Toplam ödenen</div><div class="metric-value mv-green">${fmt(totalOdenen)}</div></div>
-      <div class="metric" style="background:#fcebeb"><div class="metric-label">Ödenmeyen</div><div class="metric-value mv-red">${fmt(totalOdenmemis)}</div></div>
-      <div class="metric" style="background:#faeeda"><div class="metric-label">Bekleyen</div><div class="metric-value mv-amber">${fmt(totalBekleyen)}</div></div>
-      <div class="metric"><div class="metric-label">Toplam taksit</div><div class="metric-value mv-blue">${rows.length}</div></div>
+      <div class="metric" style="background:#eaf3de"><div class="metric-label">Kira ödenen</div><div class="metric-value mv-green">${fmt(totalOdenen)}</div></div>
+      <div class="metric" style="background:#fcebeb"><div class="metric-label">Kira ödenmeyen</div><div class="metric-value mv-red">${fmt(totalOdenmemis)}</div></div>
+      <div class="metric" style="background:#faeeda"><div class="metric-label">Kira bekleyen</div><div class="metric-value mv-amber">${fmt(totalBekleyen)}</div></div>
+      ${depInst>1?`<div class="metric" style="background:#eeedfe"><div class="metric-label">Depozito (${fmt(depoOdenen)} / ${fmt(t.deposit)})</div><div class="metric-value" style="color:#3c3489">${fmt(depoKalan)} kalan</div></div>`:''}
     </div>
 
     <div class="card" style="padding:0;overflow:hidden">
@@ -1898,35 +2031,38 @@ async function loadPayPlan(){
             <tr style="background:#f5f5f0">
               <th style="width:40px">#</th>
               <th>Dönem</th>
+              <th>Tür</th>
               <th>Son ödeme tarihi</th>
-              <th>Kira</th>
-              <th>Aidat</th>
-              <th>İnternet</th>
-              <th>Toplam</th>
+              <th>Tutar</th>
               <th>Ödeme tarihi</th>
               <th>Yöntem</th>
               <th style="text-align:center">Durum</th>
+              <th></th>
             </tr>
           </thead>
           <tbody>
             ${rows.map(r=>`<tr class="${r.rowClass}">
               <td style="color:#888780;font-size:12px">${r.taksitNo}</td>
               <td style="font-weight:500">${r.period}</td>
+              <td><span class="badge ${r.isDepo?'bp':'bg'}" style="font-size:11px">${r.tip}</span></td>
               <td>${r.dueDate.toLocaleDateString('tr-TR')}</td>
-              <td>${fmt(t.rent)}</td>
-              <td>${fmt(t.aidat)}</td>
-              <td>${fmt(t.internet)}</td>
-              <td style="font-weight:700">${r.odenenTutar?fmt(r.odenenTutar):fmt(total)}</td>
+              <td style="font-weight:700">${fmt(r.tutar)}</td>
               <td>${r.odenmeTarihi?new Date(r.odenmeTarihi).toLocaleDateString('tr-TR'):'—'}</td>
-              <td style="font-size:12px">${r.pay?.payment_method||'—'}</td>
+              <td style="font-size:12px">${r.yontem}</td>
               <td style="text-align:center;font-size:13px;white-space:nowrap">${r.durumTr}</td>
+              <td>
+                ${r.isDepo?`<button class="btn btn-sm" onclick="markDepoPaid('${tid}','${r.depPeriod}','${r.depPayId||''}',${depTaksit})">
+                  ${r.durum==='paid'?'✏️':'✅ İşle'}</button>`
+                :`<button class="btn btn-sm" onclick="openPaymentModal('${r.pay?.id||''}','${tid}')">
+                  ${r.pay?'✏️':'+ İşle'}</button>`}
+              </td>
             </tr>`).join('')}
           </tbody>
           <tfoot>
             <tr style="background:#f0f0ec;font-weight:700">
-              <td colspan="6" style="text-align:right;padding-right:12px">TOPLAM</td>
-              <td>${fmt(rows.reduce((s,r)=>s+(r.odenenTutar||total),0))}</td>
-              <td colspan="3"></td>
+              <td colspan="4" style="text-align:right;padding-right:12px">TOPLAM</td>
+              <td>${fmt(rows.reduce((s,r)=>s+(r.tutar||0),0))}</td>
+              <td colspan="4"></td>
             </tr>
           </tfoot>
         </table>
@@ -1938,6 +2074,7 @@ async function loadPayPlan(){
       <span>${t.name} — ${propName} Daire ${aptNo}</span>
       <span>İmza: _______________</span>
     </div>`;
+}
 }
 
 // ==================== KİRA BEYANNAMESİ ====================
