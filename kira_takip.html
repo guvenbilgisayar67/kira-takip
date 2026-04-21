@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Kira Takip</title>
+<title>ONKA</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -164,8 +164,8 @@ textarea{resize:vertical;min-height:70px}
 
 <div id="login-screen">
   <div class="login-box">
-    <div class="login-logo">🏢</div>
-    <div class="login-title">Mülklerim</div>
+    <div style="width:64px;height:64px;background:#185fa5;border-radius:16px;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:26px;font-weight:800;color:#fff;letter-spacing:-1px">ON</div>
+    <div class="login-title">ONKA</div>
     <div class="login-sub">Devam etmek için şifrenizi girin</div>
     <input type="password" id="login-input" placeholder="••••••••" onkeydown="if(event.key==='Enter')checkLogin()">
     <button class="btn btn-primary" style="width:100%;padding:12px;font-size:15px;font-weight:600" onclick="checkLogin()">Giriş yap</button>
@@ -181,8 +181,13 @@ textarea{resize:vertical;min-height:70px}
 <div class="layout">
 <div class="sidebar" id="sidebar">
   <div class="logo-area">
-    <div class="logo-text">🏢 Mülklerim</div>
-    <div class="logo-sub">Mülk Yönetim Sistemi</div>
+    <div style="display:flex;align-items:center;gap:10px">
+      <div style="width:32px;height:32px;background:#185fa5;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff;letter-spacing:-0.5px;flex-shrink:0">ON</div>
+      <div>
+        <div class="logo-text">ONKA</div>
+        <div class="logo-sub">Mülk Yönetim Sistemi</div>
+      </div>
+    </div>
   </div>
   <div class="nav-section">
     <div class="nav-label">Ana Menü</div>
@@ -194,6 +199,7 @@ textarea{resize:vertical;min-height:70px}
     <div class="nav-item" data-page="expenses"><span class="nav-icon">🧾</span> Giderler</div>
     <div class="nav-item" data-page="reports"><span class="nav-icon">📈</span> Raporlar</div>
     <div class="nav-item" data-page="reminders"><span class="nav-icon">🔔</span> Hatırlatıcılar</div>
+    <div class="nav-item" data-page="taxdecl"><span class="nav-icon">🧮</span> Kira Beyannamesi</div>
     <div class="nav-label">Sistem</div>
     <div class="nav-item" data-page="settings"><span class="nav-icon">⚙️</span> Ayarlar</div>
   </div>
@@ -329,6 +335,130 @@ textarea{resize:vertical;min-height:70px}
       <div class="metric"><div class="metric-label">Yeni kira</div><div class="metric-value mv-green" id="calc-result">—</div></div>
     </div>
     <div class="rent-calc" id="calc-detail"></div>
+  </div>
+</div>
+
+<!-- KİRA BEYANNAMESİ -->
+<div class="page" id="page-taxdecl">
+  <div class="page-header">
+    <div class="page-title">Kira Beyannamesi Hesaplama</div>
+    <div style="display:flex;gap:8px;align-items:center">
+      <select id="tax-year" onchange="loadTaxDecl()" style="width:100px">
+        <option value="2025">2025</option>
+        <option value="2024">2024</option>
+        <option value="2023">2023</option>
+      </select>
+      <button class="btn btn-primary" onclick="window.print()">🖨️ Yazdır</button>
+    </div>
+  </div>
+
+  <div class="notif" id="tax-notif" style="display:none"></div>
+
+  <div class="card" style="background:#e6f1fb;border-color:#b5d4f4">
+    <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start">
+      <div style="flex:1;min-width:200px">
+        <div style="font-size:13px;font-weight:600;color:#0c447c;margin-bottom:8px">📋 2025 Mevzuat Bilgisi</div>
+        <div style="font-size:12px;color:#185fa5;line-height:1.8">
+          • Konut kira istisna: <strong>47.000 TL</strong><br>
+          • Götürü gider oranı: <strong>%25</strong><br>
+          • Beyanname son tarihi: <strong>31 Mart 2026</strong><br>
+          • 1. taksit: <strong>31 Mart 2026</strong> &nbsp;|&nbsp; 2. taksit: <strong>31 Temmuz 2026</strong>
+        </div>
+      </div>
+      <div style="flex:1;min-width:200px">
+        <div style="font-size:13px;font-weight:600;color:#0c447c;margin-bottom:8px">📊 2025 Vergi Dilimleri (Ücret Dışı)</div>
+        <div style="font-size:12px;color:#185fa5;line-height:1.8">
+          • 158.000 TL'ye kadar: <strong>%15</strong><br>
+          • 158.001 – 330.000 TL: <strong>%20</strong><br>
+          • 330.001 – 800.000 TL: <strong>%27</strong><br>
+          • 800.001 – 4.300.000 TL: <strong>%35</strong><br>
+          • 4.300.000 TL üzeri: <strong>%40</strong>
+        </div>
+      </div>
+      <div style="flex:1;min-width:200px">
+        <div style="font-size:13px;font-weight:600;color:#0c447c;margin-bottom:8px">⚙️ Hesaplama Ayarları</div>
+        <div style="display:flex;flex-direction:column;gap:8px">
+          <div class="form-group">
+            <label style="color:#185fa5">Gider yöntemi</label>
+            <select id="tax-gider-method" onchange="loadTaxDecl()" style="font-size:12px">
+              <option value="goturu">Götürü gider (%25)</option>
+              <option value="gercek">Gerçek gider</option>
+            </select>
+          </div>
+          <div class="form-group" id="tax-gercek-gider-wrap" style="display:none">
+            <label style="color:#185fa5">Toplam gerçek gider (₺)</label>
+            <input type="number" id="tax-gercek-gider" value="0" oninput="loadTaxDecl()" style="font-size:12px">
+          </div>
+          <div style="display:flex;align-items:center;gap:8px">
+            <input type="checkbox" id="tax-istisna" checked onchange="loadTaxDecl()" style="width:auto">
+            <label style="color:#185fa5;font-size:12px">Mesken istisnasından yararlan (47.000 TL)</label>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DAİRE BAZLI GELİR TABLOSU -->
+  <div class="card">
+    <div class="section-title">Daire bazlı tahsilat (düzenlenebilir)</div>
+    <div style="overflow-x:auto">
+      <table id="tax-apt-table">
+        <thead>
+          <tr>
+            <th>Mülk</th>
+            <th>Daire</th>
+            <th>Tip</th>
+            <th>Tahsilat (₺) <span style="font-weight:400;font-size:11px">— düzenleyebilirsiniz</span></th>
+            <th>Aylık ortalama</th>
+            <th>Durum</th>
+          </tr>
+        </thead>
+        <tbody id="tax-apt-tbody"></tbody>
+        <tfoot>
+          <tr style="background:#f5f5f0;font-weight:600">
+            <td colspan="3">Toplam</td>
+            <td id="tax-total-income">₺0</td>
+            <td></td>
+            <td></td>
+          </tr>
+        </tfoot>
+      </table>
+    </div>
+  </div>
+
+  <!-- VERGİ HESAPLAMA SONUCU -->
+  <div class="card" id="tax-result-card">
+    <div class="section-title">Vergi hesaplama sonucu</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px">
+      <div>
+        <div style="display:flex;flex-direction:column;gap:10px" id="tax-calc-steps"></div>
+      </div>
+      <div>
+        <div class="metric-grid" style="margin-bottom:12px">
+          <div class="metric"><div class="metric-label">Toplam gelir</div><div class="metric-value mv-blue" id="tax-r-gelir">—</div></div>
+          <div class="metric"><div class="metric-label">Matrah</div><div class="metric-value mv-amber" id="tax-r-matrah">—</div></div>
+          <div class="metric"><div class="metric-label">Hesaplanan vergi</div><div class="metric-value mv-red" id="tax-r-vergi">—</div></div>
+          <div class="metric"><div class="metric-label">Efektif oran</div><div class="metric-value mv-blue" id="tax-r-oran">—</div></div>
+        </div>
+        <div style="background:#eaf3de;border-radius:8px;padding:14px">
+          <div style="font-size:13px;font-weight:600;color:#27500a;margin-bottom:8px">💰 Ödeme planı</div>
+          <div style="font-size:13px;color:#3b6d11;display:flex;flex-direction:column;gap:4px">
+            <div>1. Taksit (31 Mart 2026): <strong id="tax-taksit1">—</strong></div>
+            <div>2. Taksit (31 Temmuz 2026): <strong id="tax-taksit2">—</strong></div>
+          </div>
+        </div>
+        <div style="background:#fcebeb;border-radius:8px;padding:14px;margin-top:10px;font-size:12px;color:#a32d2d">
+          ⚠️ Bu hesaplama tahmini niteliktedir. Kesin vergi için mali müşavirinize danışınız.
+        </div>
+      </div>
+    </div>
+    <div id="tax-dilim-detail" style="margin-top:16px"></div>
+  </div>
+
+  <!-- BEYANNAME ÖZET FORMU -->
+  <div class="card" id="tax-summary-print">
+    <div class="section-title">Beyanname özeti</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;font-size:13px" id="tax-summary-grid"></div>
   </div>
 </div>
 
@@ -759,6 +889,7 @@ function showPage(name){
   else if(name==='expenses')loadExpenses();
   else if(name==='reports')loadReports();
   else if(name==='reminders')loadReminders();
+  else if(name==='taxdecl')loadTaxDecl();
 }
 
 document.querySelectorAll('.nav-item').forEach(el=>{
@@ -1576,6 +1707,232 @@ async function deleteReminder(id){
   if(!confirm('Silinsin mi?'))return;
   await db.from('reminders').delete().eq('id',id);
   toast('Silindi');loadReminders();
+}
+
+// ==================== KİRA BEYANNAMESİ ====================
+const TAX_PARAMS = {
+  2025: {
+    istisna: 47000,
+    goturu_gider: 0.25,
+    dilimler: [
+      {limit: 158000,  oran: 0.15, onceki_vergi: 0},
+      {limit: 330000,  oran: 0.20, onceki_vergi: 23700},
+      {limit: 800000,  oran: 0.27, onceki_vergi: 58100},
+      {limit: 4300000, oran: 0.35, onceki_vergi: 185000},
+      {limit: Infinity,oran: 0.40, onceki_vergi: 1410000},
+    ],
+    taksit1: '31 Mart 2026',
+    taksit2: '31 Temmuz 2026',
+    beyan_son: '31 Mart 2026'
+  },
+  2024: {
+    istisna: 33000,
+    goturu_gider: 0.25,
+    dilimler: [
+      {limit: 110000,  oran: 0.15, onceki_vergi: 0},
+      {limit: 230000,  oran: 0.20, onceki_vergi: 16500},
+      {limit: 580000,  oran: 0.27, onceki_vergi: 40500},
+      {limit: 3000000, oran: 0.35, onceki_vergi: 135000},
+      {limit: Infinity,oran: 0.40, onceki_vergi: 982000},
+    ],
+    taksit1: '31 Mart 2025',
+    taksit2: '31 Temmuz 2025',
+    beyan_son: '31 Mart 2025'
+  },
+  2023: {
+    istisna: 21000,
+    goturu_gider: 0.25,
+    dilimler: [
+      {limit: 70000,   oran: 0.15, onceki_vergi: 0},
+      {limit: 150000,  oran: 0.20, onceki_vergi: 10500},
+      {limit: 370000,  oran: 0.27, onceki_vergi: 26500},
+      {limit: 1900000, oran: 0.35, onceki_vergi: 86000},
+      {limit: Infinity,oran: 0.40, onceki_vergi: 621500},
+    ],
+    taksit1: '31 Mart 2024',
+    taksit2: '31 Temmuz 2024',
+    beyan_son: '31 Mart 2024'
+  }
+};
+
+let taxAptData = [];
+
+function calcVergi(matrah, year) {
+  const p = TAX_PARAMS[year];
+  if (matrah <= 0) return {vergi: 0, steps: []};
+  let vergi = 0;
+  let steps = [];
+  let prev = 0;
+  for (const d of p.dilimler) {
+    if (matrah <= prev) break;
+    const dilimGelir = Math.min(matrah, d.limit) - prev;
+    const dilimVergi = dilimGelir * d.oran;
+    vergi += dilimVergi;
+    steps.push({
+      aralik: prev === 0 ? `0 – ${fmt2(Math.min(matrah, d.limit))}` : `${fmt2(prev)} – ${fmt2(Math.min(matrah, d.limit))}`,
+      tutar: fmt2(dilimGelir),
+      oran: '%' + Math.round(d.oran * 100),
+      vergi: fmt2(dilimVergi)
+    });
+    prev = d.limit;
+    if (matrah <= d.limit) break;
+  }
+  return {vergi: Math.round(vergi), steps};
+}
+
+function fmt2(n) { return '₺' + Math.round(n).toLocaleString('tr-TR'); }
+
+async function loadTaxDecl() {
+  const year = parseInt(document.getElementById('tax-year').value);
+  const p = TAX_PARAMS[year];
+  const method = document.getElementById('tax-gider-method').value;
+  const useIstisna = document.getElementById('tax-istisna').checked;
+  document.getElementById('tax-gercek-gider-wrap').style.display = method === 'gercek' ? 'block' : 'none';
+
+  // Verilerden dolu daireleri çek
+  const {data: apts} = await db.from('apartments').select('id,apt_no,type,property_id,properties(name)').order('apt_no');
+  const {data: pays} = await db.from('payments').select('tenant_id,total,period,tenants(apartment_id,is_active)').eq('status','paid').like('period', year+'-%');
+
+  // Daire bazlı tahsilat hesapla
+  const aptMap = {};
+  (pays||[]).forEach(p => {
+    const aptId = p.tenants?.apartment_id;
+    if (!aptId) return;
+    aptMap[aptId] = (aptMap[aptId]||0) + (p.total||0);
+  });
+
+  taxAptData = (apts||[]).map(a => ({
+    ...a,
+    tahsilat: Math.round(aptMap[a.id]||0),
+    edited: false
+  }));
+
+  renderTaxTable(year);
+  calcTaxResult(year, method, useIstisna);
+}
+
+function renderTaxTable(year) {
+  const tbody = document.getElementById('tax-apt-tbody');
+  if (!taxAptData.length) {
+    tbody.innerHTML = '<tr><td colspan="6" class="empty">Daire bulunamadı. Önce mülk ve daire ekleyin.</td></tr>';
+    document.getElementById('tax-total-income').textContent = '₺0';
+    return;
+  }
+  tbody.innerHTML = taxAptData.map((a, i) => {
+    const aylik = a.tahsilat > 0 ? Math.round(a.tahsilat/12) : 0;
+    const p = TAX_PARAMS[year];
+    const durum = a.tahsilat === 0 ? '<span class="badge bg">Gelir yok</span>' :
+      a.tahsilat < p.istisna ? '<span class="badge bs">İstisna altı</span>' :
+      '<span class="badge bw">Beyan gerekli</span>';
+    return `<tr>
+      <td>${a.properties?.name||'—'}</td>
+      <td>Daire ${a.apt_no}</td>
+      <td><span class="badge bg">${a.type||'—'}</span></td>
+      <td><input type="number" value="${a.tahsilat}" style="width:140px;font-size:13px;padding:5px 8px;border:1px solid #d3d1c7;border-radius:6px;background:#fff"
+        onchange="taxAptData[${i}].tahsilat=parseInt(this.value)||0;taxAptData[${i}].edited=true;updateTaxTotals(${year})"
+        oninput="taxAptData[${i}].tahsilat=parseInt(this.value)||0;updateTaxTotals(${year})"></td>
+      <td style="color:#888780">${aylik>0?fmt2(aylik):' —'}</td>
+      <td>${durum}</td>
+    </tr>`;
+  }).join('');
+  updateTaxTotals(year);
+}
+
+function updateTaxTotals(year) {
+  const total = taxAptData.reduce((s,a) => s + (a.tahsilat||0), 0);
+  document.getElementById('tax-total-income').textContent = fmt2(total);
+  const method = document.getElementById('tax-gider-method').value;
+  const useIstisna = document.getElementById('tax-istisna').checked;
+  calcTaxResult(year, method, useIstisna);
+}
+
+function calcTaxResult(year, method, useIstisna) {
+  const p = TAX_PARAMS[year];
+  const totalGelir = taxAptData.reduce((s,a) => s + (a.tahsilat||0), 0);
+  const istisna = useIstisna ? p.istisna : 0;
+  const istisnaUyg = Math.min(istisna, totalGelir);
+  const sonrasiGelir = Math.max(0, totalGelir - istisnaUyg);
+
+  let gider = 0, giderAciklama = '';
+  if (method === 'goturu') {
+    gider = Math.round(sonrasiGelir * p.goturu_gider);
+    giderAciklama = `Götürü gider (%25 × ${fmt2(sonrasiGelir)})`;
+  } else {
+    gider = parseInt(document.getElementById('tax-gercek-gider').value)||0;
+    // Gerçek giderde vergiye tabi hasılata isabet eden kısım
+    if (totalGelir > 0) gider = Math.round(gider * sonrasiGelir / totalGelir);
+    giderAciklama = 'Gerçek gider (vergiye tabi kısma isabet eden)';
+  }
+
+  const matrah = Math.max(0, sonrasiGelir - gider);
+  const {vergi, steps} = calcVergi(matrah, year);
+  const efektif = totalGelir > 0 ? ((vergi / totalGelir) * 100).toFixed(1) : 0;
+
+  document.getElementById('tax-r-gelir').textContent = fmt2(totalGelir);
+  document.getElementById('tax-r-matrah').textContent = fmt2(matrah);
+  document.getElementById('tax-r-vergi').textContent = fmt2(vergi);
+  document.getElementById('tax-r-oran').textContent = '%' + efektif;
+  document.getElementById('tax-taksit1').textContent = fmt2(Math.ceil(vergi/2)) + ' (' + p.taksit1 + ')';
+  document.getElementById('tax-taksit2').textContent = fmt2(Math.floor(vergi/2)) + ' (' + p.taksit2 + ')';
+
+  // Hesaplama adımları
+  const stepsEl = document.getElementById('tax-calc-steps');
+  const stepData = [
+    {label: 'Brüt kira geliri', val: fmt2(totalGelir), color: '#0c447c'},
+    {label: `Mesken istisnası (${year})`, val: useIstisna ? `- ${fmt2(istisnaUyg)}` : 'Uygulanmadı', color: '#27500a'},
+    {label: 'İstisna sonrası gelir', val: fmt2(sonrasiGelir), color: '#633806'},
+    {label: giderAciklama, val: `- ${fmt2(gider)}`, color: '#27500a'},
+    {label: 'Vergi matrahı', val: fmt2(matrah), color: '#633806', bold: true},
+    {label: 'Hesaplanan vergi', val: fmt2(vergi), color: '#a32d2d', bold: true},
+  ];
+  stepsEl.innerHTML = stepData.map(s => `
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:7px 10px;background:#fafaf8;border-radius:6px;border-left:3px solid ${s.color}">
+      <span style="font-size:12px;color:#5f5e5a">${s.label}</span>
+      <span style="font-size:13px;font-weight:${s.bold?'700':'500'};color:${s.color}">${s.val}</span>
+    </div>`).join('');
+
+  // Dilim detayı
+  const dilimEl = document.getElementById('tax-dilim-detail');
+  if (steps.length > 0) {
+    dilimEl.innerHTML = `<div class="section-title" style="margin-top:4px">Vergi dilimi dağılımı</div>
+      <div style="overflow-x:auto"><table>
+        <thead><tr><th>Gelir aralığı</th><th>Tutarı</th><th>Oran</th><th>Vergi</th></tr></thead>
+        <tbody>${steps.map(s=>`<tr><td>${s.aralik}</td><td>${s.tutar}</td><td><span class="badge bw">${s.oran}</span></td><td><strong>${s.vergi}</strong></td></tr>`).join('')}</tbody>
+      </table></div>`;
+  } else {
+    dilimEl.innerHTML = '';
+  }
+
+  // Notif
+  const notif = document.getElementById('tax-notif');
+  if (totalGelir === 0) {
+    notif.style.display = 'flex';
+    notif.innerHTML = '⚠️ Henüz bu yıl için ödeme kaydı bulunamadı. Ödemeleri girdikten sonra ya da tablodan manuel girin.';
+  } else if (totalGelir <= p.istisna && useIstisna) {
+    notif.style.display = 'flex';
+    notif.innerHTML = `✅ Toplam kira geliriniz ${fmt2(totalGelir)}, istisna tutarı ${fmt2(p.istisna)} altında. <strong>Beyanname verme zorunluluğunuz yok.</strong> Ancak GİB Hazır Beyan üzerinden istisna dilekçesi vermeniz önerilir.`;
+  } else {
+    notif.style.display = 'none';
+  }
+
+  // Özet
+  document.getElementById('tax-summary-grid').innerHTML = [
+    {l:'Vergi yılı', v: year},
+    {l:'Toplam tahsilat', v: fmt2(totalGelir)},
+    {l:'Uygulanan istisna', v: fmt2(istisnaUyg)},
+    {l:'Gider yöntemi', v: method==='goturu'?'Götürü (%25)':'Gerçek gider'},
+    {l:'İndirilen gider', v: fmt2(gider)},
+    {l:'Vergi matrahı', v: fmt2(matrah)},
+    {l:'Hesaplanan vergi', v: fmt2(vergi)},
+    {l:'Efektif vergi oranı', v: '%'+efektif},
+    {l:'1. Taksit', v: fmt2(Math.ceil(vergi/2))},
+    {l:'2. Taksit', v: fmt2(Math.floor(vergi/2))},
+    {l:'Beyanname son tarihi', v: p.beyan_son},
+    {l:'Daire sayısı', v: taxAptData.length+' adet'},
+  ].map(x=>`<div class="di" style="background:#f5f5f0;padding:10px 12px;border-radius:8px">
+    <span class="di-label">${x.l}</span>
+    <span class="di-val" style="font-size:14px">${x.v}</span>
+  </div>`).join('');
 }
 
 // ==================== BAŞLANGIÇ ====================
