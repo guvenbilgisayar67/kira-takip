@@ -1882,13 +1882,14 @@ async function saveDepo(){
   loadPayPlan();
 }
 
-async function markDepoPaid(tid,period,existingId,tutar){
+async function markDepoPaid(tid,period,existingId,beklenenTutar){
   if(existingId&&existingId!==''){
-    // Zaten var, ödeme modalını aç
     openPaymentModal(existingId,tid);
     return;
   }
-  // Yeni depozito ödemesi oluştur
+  const girilen=prompt(`Depozito taksit tutarını girin:\n(Beklenen: ₺${Number(beklenenTutar).toLocaleString('tr-TR')})`,beklenenTutar);
+  if(girilen===null)return;
+  const tutar=parseFloat(girilen)||beklenenTutar;
   const today=new Date().toISOString().split('T')[0];
   const{error}=await db.from('payments').insert({
     tenant_id:tid,period,rent:0,aidat:0,internet:0,other:tutar,total:tutar,
@@ -1896,7 +1897,7 @@ async function markDepoPaid(tid,period,existingId,tutar){
     payment_type:'depozito',notes:'Depozito taksit ödemesi'
   });
   if(error){toast('Hata: '+error.message,'err');return;}
-  toast('Depozito taksiti ödendi olarak işlendi!');
+  toast('Depozito taksiti işlendi! ₺'+Number(tutar).toLocaleString('tr-TR'));
   loadPayPlan();
 }
 
@@ -1929,13 +1930,20 @@ async function loadPayPlan(){
   const today=new Date();
   const kiraTotal=(t.rent||0)+(t.aidat||0)+(t.internet||0);
   const depInst=t.deposit_installments||1;
-  const depTaksit=depInst>1?Math.round((t.deposit||0)/depInst):0;
+  const depToplam=t.deposit||0;
+
+  // Önceden ödenen depozito taksitlerini hesapla
+  const depPaidPays=Object.entries(paidMap)
+    .filter(([k,v])=>k.endsWith('_dep')&&v.status==='paid')
+    .map(([k,v])=>v);
+  const depOdenenToplam=depPaidPays.reduce((s,p)=>s+(p.total||p.other||0),0);
 
   // Tüm ayları üret
   let rows=[];
   let cur=new Date(start.getFullYear(),start.getMonth(),1);
   const endMonth=new Date(end.getFullYear(),end.getMonth(),1);
   let taksitNo=1;
+  let depOdenenSofar=0; // O ana kadar ödenen depozito
 
   while(cur<=endMonth){
     const period=`${cur.getFullYear()}-${String(cur.getMonth()+1).padStart(2,'0')}`;
@@ -1963,19 +1971,41 @@ async function loadPayPlan(){
       // Depozito taksit satırı (sadece ilk N ay)
       if(depInst>1&&taksitNo<=depInst){
         const depPay=paidMap[period+'_dep'];
+        // Eğer bu taksit ödendiyse gerçek ödenen tutarı al
+        const buTaksitOdenen=depPay?.status==='paid'?(depPay.total||depPay.other||0):0;
+        // Kalan depozito = toplam - şimdiye kadar ödenen (bu taksit dahil değil)
+        const kalanDepozito=depToplam-depOdenenSofar;
+        // Bu taksit için tutar: son taksitse kalan tümü, değilse eşit bölüm
+        const kalanTaksitSayisi=depInst-taksitNo+1;
+        // Eğer zaten ödendiyse gerçek ödenen tutarı göster, yoksa hesapla
+        const buTaksitTutar=depPay?.status==='paid'
+          ?buTaksitOdenen
+          :Math.round(kalanDepozito/kalanTaksitSayisi);
+
         let depDurum,depDurumTr,depClass;
         if(depPay&&depPay.status==='paid'){depDurum='paid';depDurumTr='✅ Ödendi';depClass='pp-row-paid';}
         else if(dueDate<today&&!depPay){depDurum='late';depDurumTr='❌ Ödenmedi';depClass='pp-row-late';}
         else{depDurum='future';depDurumTr='🕐 Bekleniyor';depClass='pp-row-future';}
+
         rows.push({
           period,dueDate,pay:depPay,durum:depDurum,durumTr:depDurumTr,rowClass:depClass,
-          taksitNo:`D-${taksitNo}`,tip:`Depozito (${taksitNo}/${depInst})`,tutar:depTaksit,
+          taksitNo:`D-${taksitNo}`,tip:`Depozito (${taksitNo}/${depInst})`,tutar:buTaksitTutar,
           odenmeTarihi:depPay?.payment_date||null,
           yontem:depPay?.payment_method||'—',
           isDepo:true,
           depPayId:depPay?.id||null,
-          depPeriod:period
+          depPeriod:period,
+          depBeklenen:Math.round(kalanDepozito/kalanTaksitSayisi)
         });
+
+        // Ödendiyse bir sonraki taksit için kümülatif sayacı güncelle
+        if(depPay?.status==='paid') depOdenenSofar+=buTaksitOdenen;
+      }
+    } else {
+      // Gösterilmeyen aylar için de depozito sayacını güncelle
+      if(depInst>1&&taksitNo<=depInst){
+        const depPay=paidMap[period+'_dep'];
+        if(depPay?.status==='paid') depOdenenSofar+=(depPay.total||depPay.other||0);
       }
     }
     taksitNo++;
@@ -2051,7 +2081,7 @@ async function loadPayPlan(){
               <td style="font-size:12px">${r.yontem}</td>
               <td style="text-align:center;font-size:13px;white-space:nowrap">${r.durumTr}</td>
               <td>
-                ${r.isDepo?`<button class="btn btn-sm" onclick="markDepoPaid('${tid}','${r.depPeriod}','${r.depPayId||''}',${depTaksit})">
+                ${r.isDepo?`<button class="btn btn-sm" onclick="markDepoPaid('${tid}','${r.depPeriod}','${r.depPayId||''}',${r.tutar})">
                   ${r.durum==='paid'?'✏️':'✅ İşle'}</button>`
                 :`<button class="btn btn-sm" onclick="openPaymentModal('${r.pay?.id||''}','${tid}')">
                   ${r.pay?'✏️':'+ İşle'}</button>`}
