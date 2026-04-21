@@ -1118,6 +1118,7 @@ async function loadApartmentDetail(aptId,propId,propName){
           <div style="margin-left:auto;display:flex;gap:6px">
             <button class="btn btn-sm" onclick="showTenantDetail('${tenant.id}')">Detay</button>
             <button class="btn btn-sm btn-warning" onclick="setTenantPassive('${tenant.id}')">Pasife al</button>
+            <button class="btn btn-sm btn-danger" onclick="deleteTenantConfirm('${tenant.id}')">🗑️ Sil</button>
           </div>
         </div>
         <div class="detail-grid">
@@ -1422,6 +1423,23 @@ async function reactivateTenant(id){
   toast('Kiracı aktive edildi');closeModal('modal-detail');loadTenants();
 }
 
+function deleteTenantConfirm(id){
+  const sifre=prompt('Kiracıyı kalıcı olarak silmek için silme şifresini girin:\n(Tüm ödeme geçmişi ve belgeler de silinecektir!)');
+  if(sifre===null)return;
+  if(sifre!=='1234'){toast('Şifre yanlış, silme iptal edildi.','err');return;}
+  deleteTenantForReal(id);
+}
+
+async function deleteTenantForReal(id){
+  await db.from('documents').delete().eq('tenant_id',id);
+  await db.from('payments').delete().eq('tenant_id',id);
+  await db.from('reminders').delete().eq('tenant_id',id);
+  await db.from('tenants').delete().eq('id',id);
+  toast('Kiracı kalıcı olarak silindi');
+  closeModal('modal-detail');loadTenants();
+  if(currentAptId){const prop=allProperties.find(p=>p.id===currentPropId);loadApartmentDetail(currentAptId,currentPropId,prop?.name||'');}
+}
+
 async function showTenantDetail(id){
   const{data:t}=await db.from('tenants').select('*,apartments(apt_no,floor,properties(name))').eq('id',id).single();
   const{data:pays}=await db.from('payments').select('*').eq('tenant_id',id).order('period',{ascending:false}).limit(24);
@@ -1442,6 +1460,7 @@ async function showTenantDetail(id){
       <div style="display:flex;gap:6px;flex-wrap:wrap">
         <button class="btn btn-sm" onclick="openTenantModal('${t.id}')">✏️ Düzenle</button>
         ${t.is_active?`<button class="btn btn-sm btn-warning" onclick="setTenantPassive('${t.id}')">⛔ Pasife al</button>`:`<button class="btn btn-sm bs" onclick="reactivateTenant('${t.id}')">✅ Aktive et</button>`}
+        <button class="btn btn-sm btn-danger" onclick="deleteTenantConfirm('${t.id}')">🗑️ Sil</button>
       </div>
     </div>
     <div class="tab-bar"><div class="tab active" onclick="switchTab(this,'det-info')">Bilgiler</div><div class="tab" onclick="switchTab(this,'det-pays')">Ödemeler (${pays?.length||0})</div><div class="tab" onclick="switchTab(this,'det-docs')">Belgeler</div></div>
