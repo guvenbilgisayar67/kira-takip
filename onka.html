@@ -143,6 +143,24 @@ textarea{resize:vertical;min-height:70px}
 .breadcrumb span:hover{text-decoration:underline}
 .img-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px}
 .img-thumb{width:100%;aspect-ratio:1;object-fit:cover;border-radius:8px;border:1px solid #e8e8e4;cursor:pointer}
+@media print{
+  .sidebar,.hamburger,.mobile-overlay,#pp-select-area,.page-header .btn,#pp-print-btn{display:none!important}
+  .main{margin-left:0!important;padding:0!important}
+  .page{display:none!important}
+  #page-payplan{display:block!important}
+  .card{border:1px solid #ccc!important;box-shadow:none!important;break-inside:avoid}
+  .pp-row-paid{background:#eaf3de!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .pp-row-late{background:#fcebeb!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .pp-row-future{background:#faeeda!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .pp-print-header{display:block!important}
+}
+.pp-print-header{display:none}
+.pp-row-paid{background:#eaf3de}
+.pp-row-late{background:#fcebeb}
+.pp-row-future{background:#faeeda}
+.pp-row-paid td:last-child{color:#27500a;font-weight:600}
+.pp-row-late td:last-child{color:#a32d2d;font-weight:600}
+.pp-row-future td:last-child{color:#633806;font-weight:600}
 @media(max-width:768px){
   .sidebar{transform:translateX(-100%);transition:transform 0.25s;z-index:300}
   .sidebar.open{transform:translateX(0);box-shadow:4px 0 20px rgba(0,0,0,0.15)}
@@ -200,6 +218,7 @@ textarea{resize:vertical;min-height:70px}
     <div class="nav-item" data-page="reports"><span class="nav-icon">📈</span> Raporlar</div>
     <div class="nav-item" data-page="reminders"><span class="nav-icon">🔔</span> Hatırlatıcılar</div>
     <div class="nav-item" data-page="taxdecl"><span class="nav-icon">🧮</span> Kira Beyannamesi</div>
+    <div class="nav-item" data-page="payplan"><span class="nav-icon">📅</span> Kiracı Tabloları</div>
     <div class="nav-label">Sistem</div>
     <div class="nav-item" data-page="settings"><span class="nav-icon">⚙️</span> Ayarlar</div>
     <div style="padding:10px 12px;border-top:1px solid #e8e8e4;margin-top:8px">
@@ -341,6 +360,33 @@ textarea{resize:vertical;min-height:70px}
     </div>
     <div class="rent-calc" id="calc-detail"></div>
   </div>
+</div>
+
+<!-- KİRACı TABLOLARI -->
+<div class="page" id="page-payplan">
+  <div class="page-header">
+    <div class="page-title">Kiracı Tabloları</div>
+    <button class="btn btn-primary" onclick="window.print()" id="pp-print-btn">🖨️ Yazdır</button>
+  </div>
+
+  <div id="pp-select-area">
+    <div class="card">
+      <div class="section-title">Kiracı seçin</div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center">
+        <select id="pp-tenant-sel" onchange="loadPayPlan()" style="width:280px;font-size:14px;padding:10px">
+          <option value="">— Kiracı seçin —</option>
+        </select>
+        <select id="pp-year-sel" onchange="loadPayPlan()" style="width:120px">
+          <option value="all">Tüm yıllar</option>
+          <option value="2026">2026</option>
+          <option value="2025">2025</option>
+          <option value="2024">2024</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div id="pp-content"></div>
 </div>
 
 <!-- KİRA BEYANNAMESİ -->
@@ -907,6 +953,7 @@ function showPage(name){
   else if(name==='reports')loadReports();
   else if(name==='reminders')loadReminders();
   else if(name==='taxdecl')loadTaxDecl();
+  else if(name==='payplan'){initPayPlan();}
 }
 
 document.querySelectorAll('.nav-item').forEach(el=>{
@@ -1755,6 +1802,142 @@ async function deleteReminder(id){
   if(!confirm('Silinsin mi?'))return;
   await db.from('reminders').delete().eq('id',id);
   toast('Silindi');loadReminders();
+}
+
+// ==================== KİRACı TABLOLARI ====================
+async function initPayPlan(){
+  const{data:tenants}=await db.from('tenants').select('id,name,apt_no,rent,aidat,internet,contract_start,payment_day,apartments(apt_no,properties(name))').order('name');
+  const sel=document.getElementById('pp-tenant-sel');
+  sel.innerHTML='<option value="">— Kiracı seçin —</option>'+(tenants||[]).map(t=>`<option value="${t.id}">${t.name} — ${t.apartments?.properties?.name?t.apartments.properties.name+' / ':''} Daire ${t.apartments?.apt_no||t.apt_no||'?'}</option>`).join('');
+}
+
+async function loadPayPlan(){
+  const tid=document.getElementById('pp-tenant-sel').value;
+  const yearFilter=document.getElementById('pp-year-sel').value;
+  const content=document.getElementById('pp-content');
+  if(!tid){content.innerHTML='';return;}
+
+  const{data:t}=await db.from('tenants').select('*,apartments(apt_no,floor,properties(name))').eq('id',tid).single();
+  if(!t){content.innerHTML='<div class="empty">Kiracı bulunamadı</div>';return;}
+
+  const{data:pays}=await db.from('payments').select('*').eq('tenant_id',tid).order('period');
+  const paidMap={};
+  (pays||[]).forEach(p=>{paidMap[p.period]=p;});
+
+  const start=t.contract_start?new Date(t.contract_start):new Date();
+  const end=t.contract_end?new Date(t.contract_end):new Date(start.getFullYear()+1,start.getMonth(),start.getDate());
+  const payDay=t.payment_day||parseInt(t.contract_start?.split('-')[2])||1;
+  const today=new Date();
+  const total=(t.rent||0)+(t.aidat||0)+(t.internet||0);
+
+  // Tüm ayları üret
+  let rows=[];
+  let cur=new Date(start.getFullYear(),start.getMonth(),1);
+  const endMonth=new Date(end.getFullYear(),end.getMonth(),1);
+  let taksitNo=1;
+  while(cur<=endMonth){
+    const period=`${cur.getFullYear()}-${String(cur.getMonth()+1).padStart(2,'0')}`;
+    const dueDate=new Date(cur.getFullYear(),cur.getMonth(),payDay);
+    const pay=paidMap[period];
+    let durum,durumTr,rowClass;
+    if(pay&&pay.status==='paid'){durum='paid';durumTr='✅ Ödendi';rowClass='pp-row-paid';}
+    else if(pay&&pay.status==='late'){durum='late';durumTr='❌ Gecikmeli';rowClass='pp-row-late';}
+    else if(dueDate<today&&!pay){durum='late';durumTr='❌ Ödenmedi';rowClass='pp-row-late';}
+    else if(pay&&pay.status==='pending'){durum='pending';durumTr='⏳ Bekliyor';rowClass='pp-row-future';}
+    else{durum='future';durumTr='🕐 Bekleniyor';rowClass='pp-row-future';}
+
+    if(yearFilter==='all'||cur.getFullYear().toString()===yearFilter){
+      rows.push({period,dueDate,pay,durum,durumTr,rowClass,taksitNo,
+        odenenTutar:pay?pay.total:null,
+        odenmeTarihi:pay?.payment_date||null});
+    }
+    taksitNo++;
+    cur=new Date(cur.getFullYear(),cur.getMonth()+1,1);
+  }
+
+  const totalOdenen=rows.filter(r=>r.durum==='paid').reduce((s,r)=>s+(r.odenenTutar||total),0);
+  const totalOdenmemis=rows.filter(r=>r.durum==='late').length*(total);
+  const totalBekleyen=rows.filter(r=>r.durum==='future'||r.durum==='pending').length*(total);
+  const propName=t.apartments?.properties?.name||'';
+  const aptNo=t.apartments?.apt_no||t.apt_no||'?';
+
+  content.innerHTML=`
+    <div class="pp-print-header" style="text-align:center;padding:16px 0 8px;border-bottom:2px solid #1a1a18;margin-bottom:16px">
+      <div style="font-size:22px;font-weight:800;letter-spacing:-0.5px">ONKA — Kira Ödeme Planı</div>
+      <div style="font-size:13px;color:#5f5e5a;margin-top:4px">Yazdırma tarihi: ${today.toLocaleDateString('tr-TR',{day:'2-digit',month:'long',year:'numeric'})}</div>
+    </div>
+
+    <div class="card" style="margin-bottom:16px">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px">
+        <div class="di"><span class="di-label">Kiracı</span><span class="di-val" style="font-size:16px;font-weight:700">${t.name}</span></div>
+        <div class="di"><span class="di-label">Mülk / Daire</span><span class="di-val">${propName?propName+' — ':''} Daire ${aptNo}</span></div>
+        <div class="di"><span class="di-label">Telefon</span><span class="di-val">${t.phone||'—'}</span></div>
+        <div class="di"><span class="di-label">TC Kimlik</span><span class="di-val">${t.tc||'—'}</span></div>
+        <div class="di"><span class="di-label">Sözleşme başlangıç</span><span class="di-val">${t.contract_start||'—'}</span></div>
+        <div class="di"><span class="di-label">Sözleşme bitiş</span><span class="di-val">${t.contract_end||'—'}</span></div>
+        <div class="di"><span class="di-label">Kira bedeli</span><span class="di-val mv-blue">${fmt(t.rent)}</span></div>
+        <div class="di"><span class="di-label">Aidat</span><span class="di-val">${fmt(t.aidat)}</span></div>
+        <div class="di"><span class="di-label">İnternet</span><span class="di-val">${fmt(t.internet)}</span></div>
+        <div class="di"><span class="di-label">Aylık toplam</span><span class="di-val mv-green" style="font-size:16px;font-weight:700">${fmt(total)}</span></div>
+        <div class="di"><span class="di-label">Ödeme günü</span><span class="di-val">Her ayın ${payDay}. günü</span></div>
+        <div class="di"><span class="di-label">Depozito</span><span class="di-val">${fmt(t.deposit)}</span></div>
+      </div>
+    </div>
+
+    <div class="metric-grid" style="margin-bottom:16px">
+      <div class="metric" style="background:#eaf3de"><div class="metric-label">Toplam ödenen</div><div class="metric-value mv-green">${fmt(totalOdenen)}</div></div>
+      <div class="metric" style="background:#fcebeb"><div class="metric-label">Ödenmeyen</div><div class="metric-value mv-red">${fmt(totalOdenmemis)}</div></div>
+      <div class="metric" style="background:#faeeda"><div class="metric-label">Bekleyen</div><div class="metric-value mv-amber">${fmt(totalBekleyen)}</div></div>
+      <div class="metric"><div class="metric-label">Toplam taksit</div><div class="metric-value mv-blue">${rows.length}</div></div>
+    </div>
+
+    <div class="card" style="padding:0;overflow:hidden">
+      <div style="overflow-x:auto">
+        <table>
+          <thead>
+            <tr style="background:#f5f5f0">
+              <th style="width:40px">#</th>
+              <th>Dönem</th>
+              <th>Son ödeme tarihi</th>
+              <th>Kira</th>
+              <th>Aidat</th>
+              <th>İnternet</th>
+              <th>Toplam</th>
+              <th>Ödeme tarihi</th>
+              <th>Yöntem</th>
+              <th style="text-align:center">Durum</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows.map(r=>`<tr class="${r.rowClass}">
+              <td style="color:#888780;font-size:12px">${r.taksitNo}</td>
+              <td style="font-weight:500">${r.period}</td>
+              <td>${r.dueDate.toLocaleDateString('tr-TR')}</td>
+              <td>${fmt(t.rent)}</td>
+              <td>${fmt(t.aidat)}</td>
+              <td>${fmt(t.internet)}</td>
+              <td style="font-weight:700">${r.odenenTutar?fmt(r.odenenTutar):fmt(total)}</td>
+              <td>${r.odenmeTarihi?new Date(r.odenmeTarihi).toLocaleDateString('tr-TR'):'—'}</td>
+              <td style="font-size:12px">${r.pay?.payment_method||'—'}</td>
+              <td style="text-align:center;font-size:13px;white-space:nowrap">${r.durumTr}</td>
+            </tr>`).join('')}
+          </tbody>
+          <tfoot>
+            <tr style="background:#f0f0ec;font-weight:700">
+              <td colspan="6" style="text-align:right;padding-right:12px">TOPLAM</td>
+              <td>${fmt(rows.reduce((s,r)=>s+(r.odenenTutar||total),0))}</td>
+              <td colspan="3"></td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+
+    <div class="pp-print-header" style="margin-top:40px;display:flex;justify-content:space-between;font-size:12px;color:#888780;border-top:1px solid #ccc;padding-top:12px">
+      <span>ONKA Mülk Yönetim Sistemi</span>
+      <span>${t.name} — ${propName} Daire ${aptNo}</span>
+      <span>İmza: _______________</span>
+    </div>`;
 }
 
 // ==================== KİRA BEYANNAMESİ ====================
