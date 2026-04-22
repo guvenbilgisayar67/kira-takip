@@ -1365,9 +1365,15 @@ async function deleteFixture(id){
 
 // ==================== KİRACILAR ====================
 async function loadTenants(){
-  const{data}=await db.from('yc_tenants').select('*,yc_apartments(apt_no,property_id,yc_properties(name))').order('created_at',{ascending:false});
-  allTenants=(data||[]).filter(t=>t.is_active);
-  window._allTenantsRaw=data||[];
+  const{data,error}=await db.from('yc_tenants').select('*').order('created_at',{ascending:false});
+  if(error){toast('Kiracılar yüklenemedi: '+error.message,'err');return;}
+  // Apartment bilgilerini ayrı çek
+  const{data:apts}=await db.from('yc_apartments').select('id,apt_no,property_id,yc_properties(name)');
+  const aptMap={};
+  (apts||[]).forEach(a=>{aptMap[a.id]=a;});
+  const enriched=(data||[]).map(t=>({...t,yc_apartments:aptMap[t.apartment_id]||null}));
+  allTenants=enriched.filter(t=>t.is_active);
+  window._allTenantsRaw=enriched;
   filterTenants();
 }
 
@@ -1546,7 +1552,7 @@ async function deleteTenantForReal(id){
 }
 
 async function showTenantDetail(id){
-  const{data:t}=await db.from('yc_tenants').select('*,yc_apartments(apt_no,floor,yc_properties(name))').eq('id',id).single();
+  const{data:t}=await db.from('yc_tenants').select('*').eq('id',id).single();
   const{data:pays}=await db.from('yc_payments').select('*').eq('tenant_id',id).order('period',{ascending:false}).limit(24);
   const{data:docs}=await db.from('yc_documents').select('*').eq('tenant_id',id);
   if(!t)return;
@@ -1639,7 +1645,7 @@ async function loadPayments(){
 }
 
 async function openPaymentModal(payId,tenantId){
-  const{data:tAll}=await db.from('yc_tenants').select('id,name,apt_no,rent,aidat,internet,apartment_id,yc_apartments(apt_no)').order('name');
+  const{data:tAll}=await db.from('yc_tenants').select('id,name,apt_no,rent,aidat,internet,apartment_id,property_id').order('name');
   const sel=document.getElementById('pay-tenant-sel');
   sel.innerHTML=(tAll||[]).map(t=>`<option value="${t.id}" data-rent="${t.rent||0}" data-aidat="${t.aidat||0}" data-internet="${t.internet||0}">${t.name} — D.${t.yc_apartments?.apt_no||t.apt_no||'?'}</option>`).join('');
   const now=new Date();
@@ -1903,7 +1909,7 @@ async function markDepoPaid(tid,period,existingId,beklenenTutar){
 
 // ==================== KİRACı TABLOLARI ====================
 async function initPayPlan(){
-  const{data:tenants}=await db.from('yc_tenants').select('id,name,apt_no,rent,aidat,internet,contract_start,payment_day,yc_apartments(apt_no,yc_properties(name))').order('name');
+  const{data:tenants}=await db.from('yc_tenants').select('id,name,apt_no,rent,aidat,internet,contract_start,payment_day,apartment_id,property_id').order('name');
   const sel=document.getElementById('pp-tenant-sel');
   sel.innerHTML='<option value="">— Kiracı seçin —</option>'+(tenants||[]).map(t=>`<option value="${t.id}">${t.name} — ${t.yc_apartments?.yc_properties?.name?t.yc_apartments.yc_properties.name+' / ':''} Daire ${t.yc_apartments?.apt_no||t.apt_no||'?'}</option>`).join('');
 }
