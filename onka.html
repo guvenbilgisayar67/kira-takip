@@ -369,7 +369,7 @@ textarea{resize:vertical;min-height:70px}
           <option value="">— Tüm kiracılar —</option>
         </select>
         <select id="status-report-year" onchange="loadStatusReport()" style="width:100px">
-          <option value="2026">2026</option>
+          <option value="2026" selected>2026</option>
           <option value="2025">2025</option>
           <option value="2024">2024</option>
         </select>
@@ -1908,8 +1908,12 @@ async function loadStatusReport(){
   const filteredTenants=tid?(tenants||[]).filter(t=>t.id===tid):(tenants||[]);
   if(!filteredTenants.length){el.innerHTML='<div class="empty">Kiracı bulunamadı</div>';return;}
 
-  const{data:pays}=await db.from('payments').select('*').in('tenant_id',filteredTenants.map(t=>t.id)).like('period',year+'-%');
-  const paidMap={};
+  const tenantIds=filteredTenants.map(t=>t.id);
+  let pays=[];
+  if(tenantIds.length>0){
+    const{data:paysData}=await db.from('payments').select('*').in('tenant_id',tenantIds).like('period',year+'-%');
+    pays=paysData||[];
+  }
   (pays||[]).forEach(p=>{paidMap[p.tenant_id+'_'+p.period]=p;});
 
   const monthsS=['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];
