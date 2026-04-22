@@ -990,7 +990,7 @@ function showPage(name){
   document.querySelector(`[data-page="${name}"]`).classList.add('active');
   closeSidebar();
   if(name==='dashboard')loadDashboard();
-  else if(name==='yc-properties-img'){currentPropId=null;currentAptId=null;loadProperties();}
+  else if(name==='properties'){currentPropId=null;currentAptId=null;loadProperties();}
   else if(name==='tenants')loadTenants();
   else if(name==='payments')loadPayments();
   else if(name==='expenses')loadExpenses();
