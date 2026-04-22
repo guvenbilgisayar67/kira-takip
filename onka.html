@@ -1955,7 +1955,7 @@ async function loadStatusReport(){
         bg='#eaf3de';text='#27500a';label='✅ Ödendi';
         yillikToplam+=(pay.total||kiraTotal);
       }else if(pay&&pay.status==='late'||(dueDate<today&&!pay&&isActive)){
-        bg='#fcebeb';text='#a32d2d';label='❌ Ödenmedi';
+        bg='#fcebeb';text='#a32d2d';label='❌ Gecikmeli';
       }else if(pay&&pay.status==='pending'){
         bg='#faeeda';text='#633806';label='⏳ Bekliyor';
       }else if(dueDate>=today&&isActive){
@@ -2134,7 +2134,7 @@ async function loadPayPlan(){
     let kiraDurum,kiraDurumTr,kiraClass;
     if(kiraPay&&kiraPay.status==='paid'){kiraDurum='paid';kiraDurumTr='✅ Ödendi';kiraClass='pp-row-paid';}
     else if(kiraPay&&kiraPay.status==='late'){kiraDurum='late';kiraDurumTr='❌ Gecikmeli';kiraClass='pp-row-late';}
-    else if(dueDate<today&&!kiraPay){kiraDurum='late';kiraDurumTr='❌ Ödenmedi';kiraClass='pp-row-late';}
+    else if(dueDate<today&&!kiraPay){kiraDurum='late';kiraDurumTr='❌ Gecikmeli';kiraClass='pp-row-late';}
     else if(kiraPay&&kiraPay.status==='pending'){kiraDurum='pending';kiraDurumTr='⏳ Bekliyor';kiraClass='pp-row-future';}
     else{kiraDurum='future';kiraDurumTr='🕐 Bekleniyor';kiraClass='pp-row-future';}
 
@@ -2164,7 +2164,7 @@ async function loadPayPlan(){
 
         let depDurum,depDurumTr,depClass;
         if(depPay&&depPay.status==='paid'){depDurum='paid';depDurumTr='✅ Ödendi';depClass='pp-row-paid';}
-        else if(dueDate<today&&!depPay){depDurum='late';depDurumTr='❌ Ödenmedi';depClass='pp-row-late';}
+        else if(dueDate<today&&!depPay){depDurum='late';depDurumTr='❌ Gecikmeli';depClass='pp-row-late';}
         else{depDurum='future';depDurumTr='🕐 Bekleniyor';depClass='pp-row-future';}
 
         rows.push({
