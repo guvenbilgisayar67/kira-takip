@@ -1108,7 +1108,7 @@ async function loadProperties(){
 
 async function loadApartments(propId,propName){
   currentPropId=propId;
-  const{data:apts}=await db.from('apartments').select('*').eq('property_id',propId).order('apt_no');
+  const{data:apts}=await db.from('apartments').select('*').eq('property_id',propId);
   const{data:activeTenants}=await db.from('tenants').select('id,name,apartment_id').eq('is_active',true).eq('property_id',propId);
   document.getElementById('prop-page-title').textContent=propName;
   document.getElementById('breadcrumb-area').innerHTML=`<div class="breadcrumb"><span onclick="loadProperties()">Mülklerim</span> › ${propName}</div>`;
@@ -1118,6 +1118,7 @@ async function loadApartments(propId,propName){
     document.getElementById('prop-content').innerHTML='<div class="empty">Henüz daire eklenmemiş.<br><br><button class="btn btn-primary" onclick="openApartmentModal()">+ Daire ekle</button></div>';
     return;
   }
+  apts.sort((a,b)=>(parseInt(a.apt_no)||0)-(parseInt(b.apt_no)||0));
   const doluCount=(activeTenants||[]).filter(t=>t.apartment_id).length;
   const bosCount=apts.length-doluCount;
   document.getElementById('prop-content').innerHTML=`
@@ -1379,6 +1380,11 @@ function filterTenants(){
     if(sf==='active'&&!t.is_active)return false;
     if(sf==='passive'&&t.is_active)return false;
     return(t.name||'').toLowerCase().includes(q)||(t.tc||'').includes(q)||(t.apartments?.apt_no||'').includes(q)||(t.phone||'').includes(q);
+  });
+  list.sort((a,b)=>{
+    const an=parseInt(a.yc_apartments?.apt_no||a.apartments?.apt_no||a.apt_no)||0;
+    const bn=parseInt(b.yc_apartments?.apt_no||b.apartments?.apt_no||b.apt_no)||0;
+    return an-bn;
   });
   renderTenantGrid(list);
 }
