@@ -1649,7 +1649,7 @@ async function showTenantDetail(id){
 async function loadPayments(){
   const period=document.getElementById('pay-period-filter').value;
   const status=document.getElementById('pay-status-filter').value;
-  let q=db.from('payments').select('*,tenants(id,name,apt_no,is_active,apartment_id)').order('period',{ascending:false});
+  let q=db.from('payments').select('*,tenants(id,name,is_active,apartment_id)').order('period',{ascending:false});
   if(period)q=q.eq('period',period);
   if(status)q=q.eq('status',status);
   const{data}=await q;
