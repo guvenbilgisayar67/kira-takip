@@ -1938,12 +1938,13 @@ async function loadReports(){
   const aptDetailMap={};
   const monthsA=['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];
   paidPays.forEach(p=>{
-    const k=p._apt?.apt_no||'?';
+    const k=p._apt?.apt_no;
+    if(!k)return;
     if(!aptDetailMap[k])aptDetailMap[k]={total:0,mo:{}};
     aptDetailMap[k].total+=(p.total||0);
     if(p.period){
       const mon=parseInt(p.period.split('-')[1])-1;
-      aptDetailMap[k].mo[mon]=(aptDetailMap[k].mo[mon]||0)+(p.total||0);
+      if(mon>=0&&mon<=11)aptDetailMap[k].mo[mon]=(aptDetailMap[k].mo[mon]||0)+(p.total||0);
     }
   });
   const aptArr=Object.entries(aptDetailMap).sort((a,b)=>(parseInt(a[0])||0)-(parseInt(b[0])||0));
@@ -1960,7 +1961,7 @@ async function loadReports(){
           ${aptArr.map(([apt,data])=>`<tr>
             <td style="padding:6px 8px;font-weight:600">D.${apt}</td>
             ${monthsA.map((_,i)=>{
-              const v=data.mo[i]||0;
+              const v=(data.mo&&data.mo[i])||0;
               return`<td style="padding:6px 4px;text-align:center;color:${v>0?'#27500a':'#d3d1c7'}">${v>0?fmt(v).replace('₺',''):'—'}</td>`;
             }).join('')}
             <td style="padding:6px 8px;text-align:right;font-weight:700;color:#185fa5">${fmt(data.total)}</td>
@@ -1968,7 +1969,7 @@ async function loadReports(){
           <tr style="background:#f0f0ec;font-weight:700">
             <td style="padding:6px 8px">Toplam</td>
             ${monthsA.map((_,i)=>{
-              const v=aptArr.reduce((s,[,d])=>s+(d.mo[i]||0),0);
+              const v=aptArr.reduce((s,[,d])=>s+((d.mo&&d.mo[i])||0),0);
               return`<td style="padding:6px 4px;text-align:center">${v>0?fmt(v).replace('₺',''):'—'}</td>`;
             }).join('')}
             <td style="padding:6px 8px;text-align:right">${fmt(aptArr.reduce((s,[,d])=>s+d.total,0))}</td>
