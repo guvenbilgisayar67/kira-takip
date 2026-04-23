@@ -1980,8 +1980,9 @@ async function loadStatusReport(){
 
   el.innerHTML=html;
   }catch(e){
-    el.innerHTML=`<div class="empty" style="color:#a32d2d">Hata: ${e.message||JSON.stringify(e)}</div>`;
-    console.error('loadStatusReport hatası:',e);
+    const msg=e?.message||e?.details||e?.hint||JSON.stringify(e);
+    el.innerHTML=`<div class="empty" style="color:#a32d2d">Hata: ${msg}</div>`;
+    console.error('loadStatusReport hatası detay:',JSON.stringify(e));
   }
 }
 
