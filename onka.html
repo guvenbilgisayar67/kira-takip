@@ -1893,29 +1893,29 @@ async function loadStatusReport(){
   const year=document.getElementById('status-report-year').value;
   const el=document.getElementById('status-report-content');
   el.innerHTML='<div class="empty">Yükleniyor...</div>';
-  try{
-  // Kiracıları çek
-  const{data:tenants,error:terr}=await db.from('tenants').select('id,name,apartment_id,rent,aidat,internet,contract_start,contract_end,payment_day').eq('is_active',true).order('created_at');
-  if(terr)throw terr;
-  const{data:allApts}=await db.from('apartments').select('id,apt_no');
-  const aptMapS={};(allApts||[]).forEach(a=>{aptMapS[a.id]=a;});
 
-  // Seçici güncelle
+  const r1=await db.from('tenants').select('id,name,apartment_id,rent,aidat,internet,contract_start,contract_end,payment_day').eq('is_active',true).order('created_at');
+  if(r1.error){el.innerHTML=`<div class="empty" style="color:#a32d2d">Kiracı yüklenemedi: ${r1.error.message}</div>`;return;}
+  const tenants=r1.data||[];
+
+  const r2=await db.from('apartments').select('id,apt_no');
+  const aptMapS={};(r2.data||[]).forEach(a=>{aptMapS[a.id]=a;});
+
   const sel=document.getElementById('status-report-tenant');
   const cur=sel.value;
-  sel.innerHTML='<option value="">— Tüm kiracılar —</option>'+(tenants||[]).map(t=>`<option value="${t.id}">${t.name} — D.${aptMapS[t.apartment_id]?.apt_no||'?'}</option>`).join('');
+  sel.innerHTML='<option value="">— Tüm kiracılar —</option>'+tenants.map(t=>`<option value="${t.id}">${t.name} — D.${aptMapS[t.apartment_id]?.apt_no||'?'}</option>`).join('');
   sel.value=cur;
 
-  const filteredTenants=tid?(tenants||[]).filter(t=>t.id===tid):(tenants||[]);
+  const filteredTenants=tid?tenants.filter(t=>t.id===tid):tenants;
   if(!filteredTenants.length){el.innerHTML='<div class="empty">Kiracı bulunamadı</div>';return;}
 
-  const tenantIds=filteredTenants.map(t=>t.id);
   let pays=[];
-  if(tenantIds.length>0){
-    const{data:paysData}=await db.from('payments').select('*').in('tenant_id',tenantIds).like('period',year+'-%');
-    pays=paysData||[];
-  }
-  (pays||[]).forEach(p=>{paidMap[p.tenant_id+'_'+p.period]=p;});
+  const tenantIds=filteredTenants.map(t=>t.id);
+  const r3=await db.from('payments').select('tenant_id,period,total,status,payment_date').in('tenant_id',tenantIds).like('period',year+'-%');
+  if(!r3.error) pays=r3.data||[];
+
+  const paidMap={};
+  pays.forEach(p=>{paidMap[p.tenant_id+'_'+p.period]=p;});
 
   const monthsS=['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];
   const today=new Date();
@@ -1928,63 +1928,60 @@ async function loadStatusReport(){
         return`<th style="padding:7px 4px;text-align:center;min-width:52px;${isCurrent?'background:#e6f1fb;color:#185fa5':''}">${m}</th>`;
       }).join('')}
       <th style="padding:7px 8px;text-align:right">Toplam</th>
-    </tr></thead>
-    <tbody>`;
+    </tr></thead><tbody>`;
 
   filteredTenants.forEach(t=>{
     const aptNo=aptMapS[t.apartment_id]?.apt_no||'?';
     const kiraTotal=(t.rent||0)+(t.aidat||0)+(t.internet||0);
     let yillikToplam=0;
-
     html+=`<tr><td style="padding:7px 10px;font-weight:500">${t.name}<br><span style="font-size:11px;color:#888780">D.${aptNo} • ${fmt(kiraTotal)}/ay</span></td>`;
 
     monthsS.forEach((_,i)=>{
       const period=`${year}-${String(i+1).padStart(2,'0')}`;
       const dueDate=new Date(parseInt(year),i,t.payment_day||5);
       const pay=paidMap[t.id+'_'+period];
-
-      // Kiracı bu ayda aktif miydi?
       const periodStart=new Date(parseInt(year),i,1);
       const periodEnd=new Date(parseInt(year),i+1,1);
-      const contractStart=t.contract_start?new Date(t.contract_start):null;
-      const contractEnd=t.contract_end?new Date(t.contract_end):null;
-      const isActive=(!contractStart||periodEnd>contractStart)&&(!contractEnd||periodStart<contractEnd);
+      const cStart=t.contract_start?new Date(t.contract_start):null;
+      const cEnd=t.contract_end?new Date(t.contract_end):null;
+      const isActive=(!cStart||periodEnd>cStart)&&(!cEnd||periodStart<cEnd);
 
       let bg,text,label;
       if(!isActive){bg='#f5f5f0';text='#d3d1c7';label='—';}
-      else if(pay&&pay.status==='paid'){
-        bg='#eaf3de';text='#27500a';label='✅ Ödendi';
-        yillikToplam+=(pay.total||kiraTotal);
-      }else if(pay&&pay.status==='late'||(dueDate<today&&!pay&&isActive)){
-        bg='#fcebeb';text='#a32d2d';label='❌ Gecikmeli';
-      }else if(pay&&pay.status==='pending'){
-        bg='#faeeda';text='#633806';label='⏳ Bekliyor';
-      }else if(dueDate>=today&&isActive){
-        bg='#f5f5f0';text='#888780';label='🕐 Ödenecek';
-      }else{bg='#f5f5f0';text='#d3d1c7';label='—';}
+      else if(pay&&pay.status==='paid'){bg='#eaf3de';text='#27500a';label='✅ Ödendi';yillikToplam+=(pay.total||kiraTotal);}
+      else if(pay&&pay.status==='late'||(dueDate<today&&!pay)){bg='#fcebeb';text='#a32d2d';label='❌ Gecikmeli';}
+      else if(pay&&pay.status==='pending'){bg='#faeeda';text='#633806';label='⏳ Bekliyor';}
+      else{bg='#f5f5f0';text='#888780';label='🕐 Ödenecek';}
 
       html+=`<td style="padding:5px 4px;text-align:center;background:${bg};color:${text};font-size:11px;white-space:nowrap">${label}</td>`;
     });
-
     html+=`<td style="padding:7px 8px;text-align:right;font-weight:700;color:#185fa5">${fmt(yillikToplam)}</td></tr>`;
   });
 
-  // Özet satırı
-  const toplamOdendi=(pays||[]).filter(p=>p.status==='paid').reduce((s,p)=>s+(p.total||0),0);
-  const toplamGecikti=(pays||[]).filter(p=>p.status==='late').length;
+  const toplamOdendi=pays.filter(p=>p.status==='paid').reduce((s,p)=>s+(p.total||0),0);
+  const toplamGecikti=pays.filter(p=>p.status==='late').length+filteredTenants.reduce((s,t)=>{
+    return s+monthsS.filter((_,i)=>{
+      const period=`${year}-${String(i+1).padStart(2,'0')}`;
+      const dueDate=new Date(parseInt(year),i,t.payment_day||5);
+      const pay=paidMap[t.id+'_'+period];
+      return dueDate<today&&!pay&&(()=>{
+        const pS=new Date(parseInt(year),i,1),pE=new Date(parseInt(year),i+1,1);
+        const cS=t.contract_start?new Date(t.contract_start):null;
+        const cE=t.contract_end?new Date(t.contract_end):null;
+        return(!cS||pE>cS)&&(!cE||pS<cE);
+      })();
+    }).length;
+  },0);
+
   html+=`</tbody></table></div>
     <div style="display:flex;gap:12px;margin-top:12px;flex-wrap:wrap;font-size:13px">
-      <span style="background:#eaf3de;color:#27500a;padding:4px 12px;border-radius:20px;font-weight:500">✅ Ödendi: ${fmt(toplamOdendi)}</span>
+      <span style="background:#eaf3de;color:#27500a;padding:4px 12px;border-radius:20px;font-weight:500">✅ Toplam ödendi: ${fmt(toplamOdendi)}</span>
       <span style="background:#fcebeb;color:#a32d2d;padding:4px 12px;border-radius:20px;font-weight:500">❌ Gecikmeli: ${toplamGecikti} ödeme</span>
     </div>`;
 
   el.innerHTML=html;
-  }catch(e){
-    const msg=e?.message||e?.details||e?.hint||JSON.stringify(e);
-    el.innerHTML=`<div class="empty" style="color:#a32d2d">Hata: ${msg}</div>`;
-    console.error('loadStatusReport hatası detay:',JSON.stringify(e));
-  }
 }
+
 
 function calcRent(){
   const base=parseFloat(document.getElementById('calc-base').value)||0;
