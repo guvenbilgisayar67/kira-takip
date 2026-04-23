@@ -1964,12 +1964,12 @@ async function loadStatusReport(){
       const period=`${year}-${String(i+1).padStart(2,'0')}`;
       const dueDate=new Date(parseInt(year),i,t.payment_day||5);
       const pay=paidMap[t.id+'_'+period];
-      return dueDate<today&&!pay&&(()=>{
-        const pS=new Date(parseInt(year),i,1),pE=new Date(parseInt(year),i+1,1);
-        const cS=t.contract_start?new Date(t.contract_start):null;
-        const cE=t.contract_end?new Date(t.contract_end):null;
-        return(!cS||pE>cS)&&(!cE||pS<cE);
-      })();
+      if(pay)return false;
+      if(dueDate>=today)return false;
+      const pS=new Date(parseInt(year),i,1),pE=new Date(parseInt(year),i+1,1);
+      const cS=t.contract_start?new Date(t.contract_start):null;
+      const cE=t.contract_end?new Date(t.contract_end):null;
+      return(!cS||pE>cS)&&(!cE||pS<cE);
     }).length;
   },0);
 
