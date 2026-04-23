@@ -1649,12 +1649,15 @@ async function showTenantDetail(id){
 async function loadPayments(){
   const period=document.getElementById('pay-period-filter').value;
   const status=document.getElementById('pay-status-filter').value;
-  let q=db.from('payments').select('*,tenants(id,name,is_active,apartment_id)').order('period',{ascending:false});
+  let q=db.from('payments').select('*').order('period',{ascending:false});
   if(period)q=q.eq('period',period);
   if(status)q=q.eq('status',status);
-  const{data}=await q;
-  // Apartment bilgilerini çek
+  const{data,error}=await q;
+
+  // Tenant ve apartment bilgilerini ayrı çek
+  const{data:allTens}=await db.from('tenants').select('id,name,is_active,apartment_id');
   const{data:allApts}=await db.from('apartments').select('id,apt_no,property_id,properties(name)');
+  const tenMapP={};(allTens||[]).forEach(t=>{tenMapP[t.id]=t;});
   const aptMapP={};(allApts||[]).forEach(a=>{aptMapP[a.id]=a;});
 
   const sel=document.getElementById('pay-period-filter');
@@ -1665,11 +1668,12 @@ async function loadPayments(){
   const tbody=document.getElementById('payment-tbody');
   if(!data||!data.length){tbody.innerHTML='<tr><td colspan="11" class="empty">Ödeme yok</td></tr>';return;}
   tbody.innerHTML=data.map(p=>{
-    const apt=aptMapP[p.tenants?.apartment_id];
-    const aptNo=apt?.apt_no||p.tenants?.apt_no||'?';
+    const ten=tenMapP[p.tenant_id];
+    const apt=aptMapP[ten?.apartment_id];
+    const aptNo=apt?.apt_no||'?';
     const propName=apt?.properties?.name||'';
     return`<tr>
-    <td>${p.tenants?.name||'—'}${!p.tenants?.is_active?'<span class="badge bg" style="margin-left:4px;font-size:10px">Pasif</span>':''}</td>
+    <td>${ten?.name||'—'}${!ten?.is_active?'<span class="badge bg" style="margin-left:4px;font-size:10px">Pasif</span>':''}</td>
     <td>${propName?propName+' ':''} D.${aptNo}</td>
     <td>${p.period||''}</td>
     <td>${fmt(p.rent)}</td><td>${fmt(p.aidat)}</td><td>${fmt(p.internet)}</td><td>${fmt(p.other)}</td>
