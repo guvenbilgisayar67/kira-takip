@@ -1066,7 +1066,6 @@ async function handlePayPlanAction(tid,period,existingId,durum,tutar){
 }
 
 async function autoMarkLate(){
-  // Ödeme günü geçmiş, kaydı olmayan ayları otomatik late yap
   const today=new Date();
   const{data:tenants}=await db.from('tenants').select('id,rent,aidat,internet,payment_day,contract_start,contract_end').eq('is_active',true);
   if(!tenants||!tenants.length)return;
@@ -1078,8 +1077,7 @@ async function autoMarkLate(){
     const end=t.contract_end?new Date(t.contract_end):null;
     const payDay=t.payment_day||5;
     const total=(t.rent||0)+(t.aidat||0)+(t.internet||0);
-    // Son 24 ayı kontrol et
-    for(let m=0;m<24;m++){
+    for(let m=1;m<=24;m++){
       const d=new Date(today.getFullYear(),today.getMonth()-m,1);
       const period=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
       const dueDate=new Date(d.getFullYear(),d.getMonth(),payDay);
@@ -1088,16 +1086,17 @@ async function autoMarkLate(){
       if(start&&d<new Date(start.getFullYear(),start.getMonth(),1))continue;
       if(end&&d>new Date(end.getFullYear(),end.getMonth(),1))continue;
       toInsert.push({tenant_id:t.id,period,rent:t.rent||0,aidat:t.aidat||0,internet:t.internet||0,other:0,total,status:'late',payment_type:'kira'});
+      existSet.add(t.id+'_'+period); // tekrar eklenmesini önle
     }
   });
   if(toInsert.length>0){
     await db.from('payments').insert(toInsert);
+    console.log('autoMarkLate: '+toInsert.length+' gecikmeli kayıt oluşturuldu');
   }
 }
 
 async function loadDashboard(){
   document.getElementById('dash-date').textContent=new Date().toLocaleDateString('tr-TR',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
-  await autoMarkLate();
   const[{data:props},{data:tenants},{data:apts},{data:pays}]=await Promise.all([
     db.from('properties').select('id').eq('is_active',true),
     db.from('tenants').select('*').eq('is_active',true),
@@ -1699,16 +1698,49 @@ async function showTenantDetail(id){
 async function loadPayments(){
   const period=document.getElementById('pay-period-filter').value;
   const status=document.getElementById('pay-status-filter').value;
-  let q=db.from('payments').select('*').order('period',{ascending:false});
-  if(period)q=q.eq('period',period);
-  if(status)q=q.eq('status',status);
-  const{data,error}=await q;
 
-  // Tenant ve apartment bilgilerini ayrı çek
-  const{data:allTens}=await db.from('tenants').select('id,name,is_active,apartment_id');
+  const{data:allTens}=await db.from('tenants').select('id,name,is_active,apartment_id,rent,aidat,internet,payment_day,contract_start,contract_end');
   const{data:allApts}=await db.from('apartments').select('id,apt_no,property_id,properties(name)');
   const tenMapP={};(allTens||[]).forEach(t=>{tenMapP[t.id]=t;});
   const aptMapP={};(allApts||[]).forEach(a=>{aptMapP[a.id]=a;});
+
+  let data=[];
+  const today=new Date();
+
+  if(status==='pending'){
+    // Bekliyor = veritabanında pending + kaydı olmayan gelecek aylar
+    const{data:pendingPays}=await db.from('payments').select('*').eq('status','pending');
+    const{data:allPays}=await db.from('payments').select('tenant_id,period');
+    const existSet=new Set((allPays||[]).map(p=>p.tenant_id+'_'+p.period));
+
+    // Kayıt olmayan gelecek ayları bul
+    const fakePending=[];
+    (allTens||[]).filter(t=>t.is_active).forEach(t=>{
+      const start=t.contract_start?new Date(t.contract_start):null;
+      const end=t.contract_end?new Date(t.contract_end):null;
+      const payDay=t.payment_day||5;
+      const total=(t.rent||0)+(t.aidat||0)+(t.internet||0);
+      for(let m=0;m<=12;m++){
+        const d=new Date(today.getFullYear(),today.getMonth()+m,1);
+        const per=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+        const dueDate=new Date(d.getFullYear(),d.getMonth(),payDay);
+        if(dueDate<today)continue;
+        if(existSet.has(t.id+'_'+per))continue;
+        if(start&&d<new Date(start.getFullYear(),start.getMonth(),1))continue;
+        if(end&&d>new Date(end.getFullYear(),end.getMonth(),1))continue;
+        if(period&&per!==period)continue;
+        fakePending.push({id:'fake_'+t.id+'_'+per,tenant_id:t.id,period:per,rent:t.rent||0,aidat:t.aidat||0,internet:t.internet||0,other:0,total,status:'pending',payment_date:null,payment_method:'—',_fake:true});
+      }
+    });
+    data=[...(pendingPays||[]),...fakePending];
+    if(period)data=data.filter(p=>p.period===period);
+  }else{
+    let q=db.from('payments').select('*').order('period',{ascending:false});
+    if(period)q=q.eq('period',period);
+    if(status)q=q.eq('status',status);
+    const{data:d}=await q;
+    data=d||[];
+  }
 
   const sel=document.getElementById('pay-period-filter');
   const cur=sel.value;
@@ -1717,11 +1749,12 @@ async function loadPayments(){
   sel.value=cur;
   const tbody=document.getElementById('payment-tbody');
   if(!data||!data.length){tbody.innerHTML='<tr><td colspan="11" class="empty">Ödeme yok</td></tr>';return;}
-  tbody.innerHTML=data.map(p=>{
+  tbody.innerHTML=data.sort((a,b)=>a.period>b.period?-1:1).map(p=>{
     const ten=tenMapP[p.tenant_id];
     const apt=aptMapP[ten?.apartment_id];
     const aptNo=apt?.apt_no||'?';
     const propName=apt?.properties?.name||'';
+    const isFake=p._fake;
     return`<tr>
     <td>${ten?.name||'—'}${!ten?.is_active?'<span class="badge bg" style="margin-left:4px;font-size:10px">Pasif</span>':''}</td>
     <td>${propName?propName+' ':''} D.${aptNo}</td>
@@ -1729,7 +1762,12 @@ async function loadPayments(){
     <td>${fmt(p.rent)}</td><td>${fmt(p.aidat)}</td><td>${fmt(p.internet)}</td><td>${fmt(p.other)}</td>
     <td><b>${fmt(p.total)}</b></td><td>${p.payment_date||'—'}</td>
     <td>${statusBadge(p.status)}</td>
-    <td style="display:flex;gap:4px"><button class="btn btn-sm" onclick="openPaymentModal('${p.id}')">✏️</button><button class="btn btn-sm btn-danger" onclick="deletePayment('${p.id}')">🗑️</button></td>
+    <td style="display:flex;gap:4px">
+      ${isFake
+        ?`<button class="btn btn-sm btn-primary" onclick="handlePayPlanAction('${p.tenant_id}','${p.period}','','pending',${p.total})">+ İşle</button>`
+        :`<button class="btn btn-sm" onclick="openPaymentModal('${p.id}')">✏️</button><button class="btn btn-sm btn-danger" onclick="deletePayment('${p.id}')">🗑️</button>`
+      }
+    </td>
   </tr>`;}).join('');
 }
 
@@ -2573,7 +2611,7 @@ function calcTaxResult(year, method, useIstisna) {
 document.addEventListener('DOMContentLoaded',()=>{
   if(sessionStorage.getItem('kira_ok')==='1'){
     document.getElementById('login-screen').classList.add('hidden');
-    loadDashboard();
+    autoMarkLate().then(()=>loadDashboard());
   }else{
     setTimeout(()=>document.getElementById('login-input').focus(),100);
   }
