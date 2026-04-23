@@ -1893,9 +1893,10 @@ async function loadStatusReport(){
   const year=document.getElementById('status-report-year').value;
   const el=document.getElementById('status-report-content');
   el.innerHTML='<div class="empty">Yükleniyor...</div>';
-
+  try{
   // Kiracıları çek
-  const{data:tenants}=await db.from('tenants').select('id,name,apartment_id,rent,aidat,internet,contract_start,contract_end,payment_day').eq('is_active',true).order('created_at');
+  const{data:tenants,error:terr}=await db.from('tenants').select('id,name,apartment_id,rent,aidat,internet,contract_start,contract_end,payment_day').eq('is_active',true).order('created_at');
+  if(terr)throw terr;
   const{data:allApts}=await db.from('apartments').select('id,apt_no');
   const aptMapS={};(allApts||[]).forEach(a=>{aptMapS[a.id]=a;});
 
@@ -1978,6 +1979,10 @@ async function loadStatusReport(){
     </div>`;
 
   el.innerHTML=html;
+  }catch(e){
+    el.innerHTML=`<div class="empty" style="color:#a32d2d">Hata: ${e.message||JSON.stringify(e)}</div>`;
+    console.error('loadStatusReport hatası:',e);
+  }
 }
 
 function calcRent(){
