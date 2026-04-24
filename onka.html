@@ -2259,6 +2259,7 @@ async function loadPayPlan(){
   const kiraTotal=(t.rent||0)+(t.aidat||0)+(t.internet||0);
   const depInst=t.deposit_installments||1;
   const depToplam=t.deposit||0;
+  const depTaksit=depInst>1?Math.round(depToplam/depInst):depToplam;
 
   // Önceden ödenen depozito taksitlerini hesapla
   const depPaidPays=Object.entries(paidMap)
