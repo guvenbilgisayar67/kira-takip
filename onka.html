@@ -2235,7 +2235,14 @@ async function loadPayPlan(){
 
   const{data:t}=await db.from('tenants').select('*').eq('id',tid).single();
   if(!t){content.innerHTML='<div class="empty">Kiracı bulunamadı</div>';return;}
-  const{data:aptData}=await db.from('apartments').select('id,apt_no,floor,property_id,properties(name)').eq('id',t.apartment_id).maybeSingle();
+  let aptData=null;
+  if(t.apartment_id){
+    const{data:a}=await db.from('apartments').select('id,apt_no,floor,property_id').eq('id',t.apartment_id).maybeSingle();
+    if(a){
+      const{data:prop}=await db.from('properties').select('name').eq('id',a.property_id).maybeSingle();
+      aptData={...a,properties:prop||null};
+    }
+  }
   t._apt=aptData||null;
 
   const{data:pays}=await db.from('payments').select('*').eq('tenant_id',tid).order('period');
