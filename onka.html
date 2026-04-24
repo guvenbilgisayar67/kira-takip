@@ -567,7 +567,11 @@ textarea{resize:vertical;min-height:70px}
     <div style="background:#eaf3de;border-radius:8px;padding:10px 14px;font-size:13px;color:#27500a">✅ Supabase bağlantısı aktif — https://owjqtmfubtfcmhuexulj.supabase.co</div>
   </div>
   <div class="card">
-    <div class="section-title">Şifre değiştir</div>
+    <div class="section-title">Bakım araçları</div>
+    <div style="font-size:13px;color:#5f5e5a;margin-bottom:12px">Kiracı ödeme günlerini değiştirdiyseniz veya gecikmeli kayıtlar yanlış görünüyorsa aşağıdaki butonu kullanın.</div>
+    <button class="btn btn-warning" onclick="recalcAllLate()">🔄 Tüm gecikmeli kayıtları yeniden hesapla</button>
+    <div id="recalc-status" style="font-size:13px;margin-top:10px;color:#27500a"></div>
+  </div>
     <div class="form-grid">
       <div class="form-group"><label>Mevcut şifre</label><input type="password" id="set-old-pass"></div>
       <div class="form-group"><label>Yeni şifre</label><input type="password" id="set-new-pass"></div>
@@ -1063,6 +1067,30 @@ async function handlePayPlanAction(tid,period,existingId,durum,tutar){
   }).select().single();
   if(error){toast('Hata: '+error.message,'err');return;}
   openPaymentModal(newPay.id,tid);
+}
+
+async function autoMarkLateForTenant(tenantId){
+  const{data:t}=await db.from('tenants').select('id,rent,aidat,internet,payment_day,contract_start,contract_end').eq('id',tenantId).single();
+  if(!t)return;
+  const{data:existingPays}=await db.from('payments').select('tenant_id,period').eq('tenant_id',tenantId);
+  const existSet=new Set((existingPays||[]).map(p=>p.tenant_id+'_'+p.period));
+  const today=new Date();
+  const start=t.contract_start?new Date(t.contract_start):null;
+  const end=t.contract_end?new Date(t.contract_end):null;
+  const payDay=t.payment_day||5;
+  const total=(t.rent||0)+(t.aidat||0)+(t.internet||0);
+  const toInsert=[];
+  for(let m=1;m<=24;m++){
+    const d=new Date(today.getFullYear(),today.getMonth()-m,1);
+    const period=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+    const dueDate=new Date(d.getFullYear(),d.getMonth(),payDay);
+    if(dueDate>=today)continue;
+    if(existSet.has(t.id+'_'+period))continue;
+    if(start&&d<new Date(start.getFullYear(),start.getMonth(),1))continue;
+    if(end&&d>new Date(end.getFullYear(),end.getMonth(),1))continue;
+    toInsert.push({tenant_id:t.id,period,rent:t.rent||0,aidat:t.aidat||0,internet:t.internet||0,other:0,total,status:'late',payment_type:'kira'});
+  }
+  if(toInsert.length>0)await db.from('payments').insert(toInsert);
 }
 
 async function autoMarkLate(){
@@ -1592,7 +1620,13 @@ async function saveTenant(){
     else{const{data}=await db.from('tenants').insert(payload).select().single();savedId=data.id;}
     if(contractUrl&&savedId)await db.from('documents').insert({tenant_id:savedId,name:'Kira Sözleşmesi',type:'Sözleşme',file_url:contractUrl,file_name:tenantContractFile.name});
     toast(tid?'Kiracı güncellendi!':'Kiracı eklendi!');
-    closeModal('modal-tenant');loadTenants();
+    closeModal('modal-tenant');
+    // Ödeme günü değişmiş olabilir — late kayıtları sil, yeniden hesapla
+    if(savedId){
+      await db.from('payments').delete().eq('tenant_id',savedId).eq('status','late');
+      await autoMarkLateForTenant(savedId);
+    }
+    loadTenants();
   }catch(e){toast('Hata: '+e.message,'err');}
   finally{btn.textContent='Kaydet';btn.disabled=false;}
 }
@@ -2179,9 +2213,16 @@ async function markDepoPaid(tid,period,existingId,beklenenTutar){
 
 // ==================== KİRACı TABLOLARI ====================
 async function initPayPlan(){
-  const{data:tenants}=await db.from('tenants').select('id,name,apt_no,rent,aidat,internet,contract_start,payment_day,apartments(apt_no,properties(name))').order('name');
+  const{data:tenants}=await db.from('tenants').select('id,name,apt_no,rent,aidat,internet,contract_start,payment_day,apartment_id,property_id').eq('is_active',true).order('name');
+  const{data:apts}=await db.from('apartments').select('id,apt_no,property_id,properties(name)');
+  const aptMapPP={};(apts||[]).forEach(a=>{aptMapPP[a.id]=a;});
   const sel=document.getElementById('pp-tenant-sel');
-  sel.innerHTML='<option value="">— Kiracı seçin —</option>'+(tenants||[]).map(t=>`<option value="${t.id}">${t.name} — ${t.apartments?.properties?.name?t.apartments.properties.name+' / ':''} Daire ${t.apartments?.apt_no||t.apt_no||'?'}</option>`).join('');
+  sel.innerHTML='<option value="">— Kiracı seçin —</option>'+(tenants||[]).map(t=>{
+    const apt=aptMapPP[t.apartment_id];
+    const propName=apt?.properties?.name||'';
+    const aptNo=apt?.apt_no||t.apt_no||'?';
+    return`<option value="${t.id}">${t.name} — ${propName?propName+' / ':''} Daire ${aptNo}</option>`;
+  }).join('');
 }
 
 async function loadPayPlan(){
@@ -2190,8 +2231,10 @@ async function loadPayPlan(){
   const content=document.getElementById('pp-content');
   if(!tid){content.innerHTML='';return;}
 
-  const{data:t}=await db.from('tenants').select('*,apartments(apt_no,floor,properties(name))').eq('id',tid).single();
+  const{data:t}=await db.from('tenants').select('*').eq('id',tid).single();
   if(!t){content.innerHTML='<div class="empty">Kiracı bulunamadı</div>';return;}
+  const{data:aptData}=await db.from('apartments').select('id,apt_no,floor,property_id,properties(name)').eq('id',t.apartment_id).maybeSingle();
+  t._apt=aptData||null;
 
   const{data:pays}=await db.from('payments').select('*').eq('tenant_id',tid).order('period');
   const paidMap={};
@@ -2295,8 +2338,8 @@ async function loadPayPlan(){
   const totalBekleyen=kiraRows.filter(r=>r.durum==='future'||r.durum==='pending').length*kiraTotal;
   const depoOdenen=depoRows.filter(r=>r.durum==='paid').reduce((s,r)=>s+(r.tutar||0),0);
   const depoKalan=depoRows.filter(r=>r.durum!=='paid').reduce((s,r)=>s+(r.tutar||0),0);
-  const propName=t.apartments?.properties?.name||'';
-  const aptNo=t.apartments?.apt_no||t.apt_no||'?';
+  const propName=t._apt?.properties?.name||'';
+  const aptNo=t._apt?.apt_no||t.apt_no||'?';
 
   content.innerHTML=`
     <div class="pp-print-header" style="text-align:center;padding:16px 0 8px;border-bottom:2px solid #1a1a18;margin-bottom:16px">
@@ -2606,6 +2649,18 @@ function calcTaxResult(year, method, useIstisna) {
     <span class="di-label">${x.l}</span>
     <span class="di-val" style="font-size:14px">${x.v}</span>
   </div>`).join('');
+}
+
+async function recalcAllLate(){
+  const btn=document.querySelector('[onclick="recalcAllLate()"]');
+  const status=document.getElementById('recalc-status');
+  if(btn)btn.disabled=true;
+  if(status)status.textContent='Hesaplanıyor...';
+  await db.from('payments').delete().eq('status','late');
+  await autoMarkLate();
+  if(btn){btn.disabled=false;btn.textContent='🔄 Tüm gecikmeli kayıtları yeniden hesapla';}
+  if(status){status.textContent='✅ Tamamlandı!';setTimeout(()=>status.textContent='',4000);}
+  toast('Gecikmeli kayıtlar güncellendi!');
 }
 
 // ==================== BAŞLANGIÇ ====================
