@@ -866,22 +866,37 @@ textarea{resize:vertical;min-height:70px}
     </div>
     <div class="modal-body">
       <input type="hidden" id="depo-tenant-id">
-      <div class="form-grid">
-        <div class="form-group fg1"><label>Toplam depozito (₺)</label><input id="depo-amount" type="number" oninput="updateDepoPreview()"></div>
-        <div class="form-group fg1"><label>Taksit sayısı</label>
-          <select id="depo-inst" onchange="updateDepoPreview()">
-            <option value="1">Tek seferde</option>
-            <option value="2">2 taksit</option>
-            <option value="3">3 taksit</option>
-            <option value="4">4 taksit</option>
-            <option value="5">5 taksit</option>
-            <option value="6">6 taksit</option>
-          </select>
-        </div>
+      <div class="tab-bar">
+        <div class="tab active" onclick="switchTab(this,'depo-tab-genel')">⚙️ Genel ayar</div>
+        <div class="tab" onclick="switchTab(this,'depo-tab-taksit')">✏️ Taksit düzenle</div>
       </div>
-      <div class="rent-calc" id="depo-preview" style="margin-top:12px"></div>
-      <div style="background:#faeeda;border-radius:8px;padding:10px 14px;font-size:12px;color:#633806;margin-top:10px">
-        ⚠️ Değişiklik kaydedildiğinde mevcut depozito ödeme kayıtları güncellenmez, yeni plan oluşturulur.
+      <div class="tab-content active" id="depo-tab-genel">
+        <div class="form-grid">
+          <div class="form-group fg1"><label>Toplam depozito (₺)</label><input id="depo-amount" type="number" oninput="updateDepoPreview()"></div>
+          <div class="form-group fg1"><label>Taksit sayısı</label>
+            <select id="depo-inst" onchange="updateDepoPreview()">
+              <option value="1">Tek seferde</option>
+              <option value="2">2 taksit</option>
+              <option value="3">3 taksit</option>
+              <option value="4">4 taksit</option>
+              <option value="5">5 taksit</option>
+              <option value="6">6 taksit</option>
+            </select>
+          </div>
+        </div>
+        <div class="rent-calc" id="depo-preview" style="margin-top:12px"></div>
+      </div>
+      <div class="tab-content" id="depo-tab-taksit">
+        <div style="font-size:12px;color:#888780;margin-bottom:12px">Her taksiti düzenleyin. Toplam otomatik hesaplanır ve depozito tutarına eşitlenir.</div>
+        <div id="depo-taksit-rows"></div>
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-top:12px;padding:10px 12px;background:#f5f5f0;border-radius:8px">
+          <span style="font-size:13px;font-weight:500">Taksitler toplamı:</span>
+          <span style="font-size:15px;font-weight:700;color:#185fa5" id="depo-taksit-toplam">₺0</span>
+        </div>
+        <div id="depo-taksit-uyari" style="font-size:12px;color:#a32d2d;margin-top:6px;display:none">⚠️ Toplam, depozito tutarıyla eşleşmiyor. Kaydet butonuna basınca son taksit otomatik düzeltilecek.</div>
+      </div>
+      <div style="background:#faeeda;border-radius:8px;padding:10px 14px;font-size:12px;color:#633806;margin-top:12px">
+        ⚠️ Değişiklik kaydedildiğinde ödenmemiş taksitler yeni tutarla güncellenir.
       </div>
       <div class="btn-row">
         <button class="btn" onclick="closeModal('modal-depo')">İptal</button>
@@ -2167,7 +2182,51 @@ function openDepoModal(tid,deposit,inst){
   document.getElementById('depo-amount').value=deposit;
   document.getElementById('depo-inst').value=inst||1;
   updateDepoPreview();
+  renderDepoTaksitRows(deposit,inst);
+  // Genel tab aktif yap
+  document.querySelectorAll('#modal-depo .tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('#modal-depo .tab-content').forEach(t=>t.classList.remove('active'));
+  document.querySelector('[onclick*="depo-tab-genel"]').classList.add('active');
+  document.getElementById('depo-tab-genel').classList.add('active');
   openModal('modal-depo');
+}
+
+function renderDepoTaksitRows(toplam,inst){
+  toplam=parseFloat(toplam)||0;
+  inst=parseInt(inst)||1;
+  if(inst<=1){
+    document.getElementById('depo-taksit-rows').innerHTML='<div class="empty" style="padding:16px">Tek seferlik depozito — taksit düzenleme gerekmiyor.</div>';
+    document.getElementById('depo-taksit-toplam').textContent=fmt(toplam);
+    return;
+  }
+  const taksitTutar=Math.round(toplam/inst);
+  let rows='';
+  for(let i=1;i<=inst;i++){
+    const tutar=i===inst?(toplam-(taksitTutar*(inst-1))):taksitTutar;
+    rows+=`<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f0f0ec">
+      <span style="font-size:13px;font-weight:500;min-width:70px">Taksit ${i}/${inst}</span>
+      <input type="number" id="depo-taksit-${i}" value="${tutar}" 
+        style="width:140px;font-size:13px;padding:7px 10px;border:1px solid #d3d1c7;border-radius:8px"
+        oninput="updateDepoTaksitToplam(${inst},${toplam})">
+      <span style="font-size:12px;color:#888780">₺</span>
+    </div>`;
+  }
+  document.getElementById('depo-taksit-rows').innerHTML=rows;
+  updateDepoTaksitToplam(inst,toplam);
+}
+
+function updateDepoTaksitToplam(inst,hedefToplam){
+  let toplam=0;
+  for(let i=1;i<=inst;i++){
+    toplam+=parseFloat(document.getElementById('depo-taksit-'+i)?.value)||0;
+  }
+  document.getElementById('depo-taksit-toplam').textContent=fmt(toplam);
+  const uyari=document.getElementById('depo-taksit-uyari');
+  if(Math.abs(toplam-hedefToplam)>1){
+    uyari.style.display='block';
+  }else{
+    uyari.style.display='none';
+  }
 }
 
 function updateDepoPreview(){
@@ -2178,17 +2237,50 @@ function updateDepoPreview(){
   if(inst===1){
     el.innerHTML=`Toplam <strong>${fmt(amount)}</strong> tek seferde tahsil edilecek.`;
   }else{
-    el.innerHTML=`Toplam <strong>${fmt(amount)}</strong> → ${inst} taksit × <strong>${fmt(taksit)}</strong> = ${fmt(taksit*inst)} TL <br>
-    <span style="font-size:11px;opacity:0.8">(Yuvarlama farkı: ${fmt(amount-taksit*inst)})</span>`;
+    el.innerHTML=`Toplam <strong>${fmt(amount)}</strong> → ${inst} taksit × <strong>${fmt(taksit)}</strong><br>
+    <span style="font-size:11px;opacity:0.8">Son taksit: ${fmt(amount-(taksit*(inst-1)))} (yuvarlama farkı dahil)</span>`;
   }
+  renderDepoTaksitRows(amount,inst);
 }
 
 async function saveDepo(){
   const tid=document.getElementById('depo-tenant-id').value;
   const amount=parseFloat(document.getElementById('depo-amount').value)||0;
   const inst=parseInt(document.getElementById('depo-inst').value)||1;
-  const{error}=await db.from('tenants').update({deposit:amount,deposit_installments:inst}).eq('id',tid);
+
+  // Taksit tutarlarını topla — son taksit otomatik eşitle
+  let taksitTutarlari=[];
+  if(inst>1){
+    let ara=0;
+    for(let i=1;i<inst;i++){
+      const v=parseFloat(document.getElementById('depo-taksit-'+i)?.value)||0;
+      taksitTutarlari.push(v);
+      ara+=v;
+    }
+    // Son taksit = kalan tutar
+    taksitTutarlari.push(Math.max(0,amount-ara));
+  }
+
+  // Kiracıyı güncelle
+  const{error}=await db.from('tenants').update({
+    deposit:amount,
+    deposit_installments:inst
+  }).eq('id',tid);
   if(error){toast('Hata: '+error.message,'err');return;}
+
+  // Ödenmemiş depozito kayıtlarını sil ve taksit tutarlarını güncelle
+  if(inst>1&&taksitTutarlari.length>0){
+    // Mevcut depozito ödemelerini çek
+    const{data:depPays}=await db.from('payments')
+      .select('*').eq('tenant_id',tid).eq('payment_type','depozito').order('period');
+
+    // Ödenmemiş olanları sil
+    const odenmemisler=(depPays||[]).filter(p=>p.status!=='paid');
+    if(odenmemisler.length>0){
+      await db.from('payments').delete().in('id',odenmemisler.map(p=>p.id));
+    }
+  }
+
   toast('Depozito güncellendi!');
   closeModal('modal-depo');
   loadPayPlan();
