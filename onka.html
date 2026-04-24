@@ -1097,7 +1097,7 @@ async function autoMarkLateForTenant(tenantId){
 
 async function autoMarkLate(){
   const today=new Date();
-  const{data:tenants}=await db.from('tenants').select('id,rent,aidat,internet,payment_day,contract_start,contract_end').eq('is_active',true);
+  const{data:tenants}=await db.from('tenants').select('id,rent,aidat,internet,payment_day,contract_start,contract_end').eq('is_active',true).limit(1000);
   if(!tenants||!tenants.length)return;
   const{data:existingPays}=await db.from('payments').select('tenant_id,period');
   const existSet=new Set((existingPays||[]).map(p=>p.tenant_id+'_'+p.period));
@@ -1129,7 +1129,7 @@ async function loadDashboard(){
   document.getElementById('dash-date').textContent=new Date().toLocaleDateString('tr-TR',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
   const[{data:props},{data:tenants},{data:apts},{data:pays}]=await Promise.all([
     db.from('properties').select('id').eq('is_active',true),
-    db.from('tenants').select('*').eq('is_active',true),
+    db.from('tenants').select('*').eq('is_active',true).limit(1000),
     db.from('apartments').select('*'),
     db.from('payments').select('*,tenants(name,apartment_id,is_active)').order('created_at',{ascending:false}).limit(20)
   ]);
@@ -1203,7 +1203,7 @@ async function loadProperties(){
 
   data.forEach(async p=>{
     const{data:aptList}=await db.from('apartments').select('id').eq('property_id',p.id);
-    const{data:activeTens}=await db.from('tenants').select('id').eq('property_id',p.id).eq('is_active',true);
+    const{data:activeTens}=await db.from('tenants').select('id').eq('property_id',p.id).eq('is_active',true).limit(1000);
     const total=aptList?.length||0;
     const dolu=activeTens?.length||0;
     const bos=total-dolu;
@@ -1215,7 +1215,7 @@ async function loadProperties(){
 async function loadApartments(propId,propName){
   currentPropId=propId;
   const{data:apts}=await db.from('apartments').select('*').eq('property_id',propId);
-  const{data:activeTenants}=await db.from('tenants').select('id,name,apartment_id').eq('is_active',true).eq('property_id',propId);
+  const{data:activeTenants}=await db.from('tenants').select('id,name,apartment_id').eq('is_active',true).eq('property_id',propId).limit(1000);
   document.getElementById('prop-page-title').textContent=propName;
   document.getElementById('breadcrumb-area').innerHTML=`<div class="breadcrumb"><span onclick="loadProperties()">Mülklerim</span> › ${propName}</div>`;
   document.getElementById('prop-page-actions').innerHTML=`<button class="btn btn-primary" onclick="openApartmentModal()">+ Daire ekle</button>`;
@@ -1260,7 +1260,7 @@ async function loadApartmentDetail(aptId,propId,propName){
   const{data:apt}=await db.from('apartments').select('*').eq('id',aptId).single();
   const{data:fixtures}=await db.from('fixtures').select('*').eq('apartment_id',aptId).order('category');
   const{data:tenant}=await db.from('tenants').select('*').eq('apartment_id',aptId).eq('is_active',true).maybeSingle();
-  const{data:pastTenants}=await db.from('tenants').select('id,name,contract_start,contract_end').eq('apartment_id',aptId).eq('is_active',false).order('created_at',{ascending:false});
+  const{data:pastTenants}=await db.from('tenants').select('id,name,contract_start,contract_end').eq('apartment_id',aptId).eq('is_active',false).order('created_at',{ascending:false}).limit(1000);
 
   document.getElementById('prop-page-title').textContent=`Daire ${apt.apt_no}`;
   document.getElementById('breadcrumb-area').innerHTML=`<div class="breadcrumb"><span onclick="loadProperties()">Mülklerim</span> › <span onclick="loadApartments('${propId}','${propName}')">${propName}</span> › Daire ${apt.apt_no}</div>`;
@@ -1380,7 +1380,7 @@ async function saveProperty(){
 
 async function deleteProperty(id){
   // Önce aktif kiracı var mı kontrol et
-  const{data:aktivKiraciler}=await db.from('tenants').select('id,name').eq('property_id',id).eq('is_active',true);
+  const{data:aktivKiraciler}=await db.from('tenants').select('id,name').eq('property_id',id).eq('is_active',true).limit(1000);
   if(aktivKiraciler&&aktivKiraciler.length>0){
     const isimler=aktivKiraciler.map(t=>t.name).join(', ');
     alert(`⚠️ Bu mülkü silemezsiniz!\n\nİçinde ${aktivKiraciler.length} aktif kiracı var:\n${isimler}\n\nÖnce kiracıları pasife alın veya silin, sonra mülkü silebilirsiniz.`);
@@ -1421,7 +1421,7 @@ async function saveApartment(){
 }
 
 async function deleteApartment(id){
-  const{data:aktivKiraciler}=await db.from('tenants').select('id,name').eq('apartment_id',id).eq('is_active',true);
+  const{data:aktivKiraciler}=await db.from('tenants').select('id,name').eq('apartment_id',id).eq('is_active',true).limit(1000);
   if(aktivKiraciler&&aktivKiraciler.length>0){
     alert(`⚠️ Bu daireyi silemezsiniz!\n\nİçinde aktif kiracı var: ${aktivKiraciler[0].name}\n\nÖnce kiracıyı pasife alın veya silin, sonra daireyi silebilirsiniz.`);
     return;
@@ -2023,7 +2023,7 @@ async function loadStatusReport(){
   const el=document.getElementById('status-report-content');
   el.innerHTML='<div class="empty">Yükleniyor...</div>';
 
-  const r1=await db.from('tenants').select('id,name,apartment_id,rent,aidat,internet,contract_start,contract_end,payment_day').eq('is_active',true).order('created_at');
+  const r1=await db.from('tenants').select('id,name,apartment_id,rent,aidat,internet,contract_start,contract_end,payment_day').eq('is_active',true).order('created_at').limit(1000);
   if(r1.error){el.innerHTML=`<div class="empty" style="color:#a32d2d">Kiracı yüklenemedi: ${r1.error.message}</div>`;return;}
   const tenants=r1.data||[];
 
@@ -2140,7 +2140,7 @@ async function loadReminders(){
 }
 
 async function openReminderModal(){
-  const{data:tenants}=await db.from('tenants').select('id,name,apt_no').eq('is_active',true).order('name');
+  const{data:tenants}=await db.from('tenants').select('id,name,apt_no').eq('is_active',true).order('name').limit(1000);
   document.getElementById('rem-tenant').innerHTML='<option value="">— Tüm kiracılar —</option>'+(tenants||[]).map(t=>`<option value="${t.id}">${t.name}</option>`).join('');
   ['rem-title','rem-message'].forEach(i=>document.getElementById(i).value='');
   document.getElementById('rem-date').value='';
@@ -2215,7 +2215,7 @@ async function markDepoPaid(tid,period,existingId,beklenenTutar){
 
 // ==================== KİRACı TABLOLARI ====================
 async function initPayPlan(){
-  const{data:tenants}=await db.from('tenants').select('id,name,apt_no,rent,aidat,internet,contract_start,payment_day,apartment_id,property_id').eq('is_active',true).order('name');
+  const{data:tenants}=await db.from('tenants').select('id,name,apt_no,rent,aidat,internet,contract_start,payment_day,apartment_id,property_id').eq('is_active',true).order('name').limit(1000);
   const{data:apts}=await db.from('apartments').select('id,apt_no,property_id,properties(name)');
   const aptMapPP={};(apts||[]).forEach(a=>{aptMapPP[a.id]=a;});
   const sel=document.getElementById('pp-tenant-sel');
