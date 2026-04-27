@@ -961,7 +961,7 @@ function checkLogin(){
     sessionStorage.setItem('kira_ok','1');
     document.getElementById('login-screen').classList.add('hidden');
     document.getElementById('login-error').textContent='';
-    loadDashboard();
+    runAutoMarkLateIfNeeded().then(()=>loadDashboard());
   }else{
     document.getElementById('login-error').textContent='Şifre yanlış.';
     document.getElementById('login-input').value='';
@@ -1114,7 +1114,7 @@ async function autoMarkLate(){
   const today=new Date();
   const{data:tenants}=await db.from('tenants').select('id,rent,aidat,internet,payment_day,contract_start,contract_end').eq('is_active',true).limit(1000);
   if(!tenants||!tenants.length)return;
-  const{data:existingPays}=await db.from('payments').select('tenant_id,period');
+  const{data:existingPays}=await db.from('payments').select('tenant_id,period').limit(10000);
   const existSet=new Set((existingPays||[]).map(p=>p.tenant_id+'_'+p.period));
   const toInsert=[];
   tenants.forEach(t=>{
@@ -2761,18 +2761,28 @@ async function recalcAllLate(){
   const status=document.getElementById('recalc-status');
   if(btn)btn.disabled=true;
   if(status)status.textContent='Hesaplanıyor...';
+  sessionStorage.removeItem('lastAutoMarkLate'); // Cache'i sıfırla
   await db.from('payments').delete().eq('status','late');
   await autoMarkLate();
+  sessionStorage.setItem('lastAutoMarkLate',new Date().toDateString());
   if(btn){btn.disabled=false;btn.textContent='🔄 Tüm gecikmeli kayıtları yeniden hesapla';}
   if(status){status.textContent='✅ Tamamlandı!';setTimeout(()=>status.textContent='',4000);}
   toast('Gecikmeli kayıtlar güncellendi!');
+}
+
+async function runAutoMarkLateIfNeeded(){
+  const today=new Date().toDateString();
+  const lastRun=sessionStorage.getItem('lastAutoMarkLate');
+  if(lastRun===today)return; // Bugün zaten çalıştı
+  await autoMarkLate();
+  sessionStorage.setItem('lastAutoMarkLate',today);
 }
 
 // ==================== BAŞLANGIÇ ====================
 document.addEventListener('DOMContentLoaded',()=>{
   if(sessionStorage.getItem('kira_ok')==='1'){
     document.getElementById('login-screen').classList.add('hidden');
-    autoMarkLate().then(()=>loadDashboard());
+    runAutoMarkLateIfNeeded().then(()=>loadDashboard());
   }else{
     setTimeout(()=>document.getElementById('login-input').focus(),100);
   }
