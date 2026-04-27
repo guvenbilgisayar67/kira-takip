@@ -1203,7 +1203,7 @@ async function loadProperties(){
     return;
   }
   document.getElementById('prop-content').innerHTML=`<div class="grid-3">${data.map(p=>`
-    <div class="prop-card" onclick="loadApartments('${p.id}','${p.name.replace(/'/g,"\\'")}')">
+    <div class="prop-card" onclick="loadApartments('${p.id}','${p.name.replace(/'/g,"\'")}')">
       <div class="prop-img">${p.photo_url?`<img src="${p.photo_url}">`:'🏢'}</div>
       <div class="prop-body">
         <div class="prop-name">${p.name}</div>
@@ -1383,7 +1383,7 @@ async function saveProperty(){
   if(!name){toast('Mülk adı zorunludur','err');return;}
   let photo_url=undefined;
   const pf=window['prop-photo-placeholder_file'];
-  if(pf){try{photo_url=await uploadFile(pf,'yc-properties');}catch(e){toast('Fotoğraf yüklenemedi','err');return;}}
+  if(pf){try{photo_url=await uploadFile(pf,'yc-prop-img');}catch(e){toast('Fotoğraf yüklenemedi','err');return;}}
   const payload={name,type:document.getElementById('prop-type').value,address:document.getElementById('prop-address').value,city:document.getElementById('prop-city').value,notes:document.getElementById('prop-notes').value};
   if(photo_url)payload.photo_url=photo_url;
   const pid=document.getElementById('prop-id').value;
@@ -1398,10 +1398,15 @@ async function deleteProperty(id){
   const{data:aktivKiraciler}=await db.from('yc_tenants').select('id,name').eq('property_id',id).eq('is_active',true).limit(1000);
   if(aktivKiraciler&&aktivKiraciler.length>0){
     const isimler=aktivKiraciler.map(t=>t.name).join(', ');
-    alert(`⚠️ Bu mülkü silemezsiniz!\n\nİçinde ${aktivKiraciler.length} aktif kiracı var:\n${isimler}\n\nÖnce kiracıları pasife alın veya silin, sonra mülkü silebilirsiniz.`);
+    alert(`⚠️ Bu mülkü silemezsiniz!
+
+İçinde ${aktivKiraciler.length} aktif kiracı var:
+${isimler}
+
+Önce kiracıları pasife alın veya silin, sonra mülkü silebilirsiniz.`);
     return;
   }
-  if(!confirm('Bu mülkü silmek istediğinizden emin misiniz?\nBoş daireler de kaldırılacak.'))return;
+  if(!confirm('Bu mülkü silmek istediğinizden emin misiniz? Boş daireler de kaldırılacak.'))return;
   await db.from('yc_properties').update({is_active:false}).eq('id',id);
   toast('Mülk silindi');loadProperties();
 }
@@ -1423,7 +1428,7 @@ async function saveApartment(){
   if(!no){toast('Kapı no zorunludur','err');return;}
   let photo_url=undefined;
   const af=window['apt-photo-placeholder_file'];
-  if(af){try{photo_url=await uploadFile(af,'yc-apartments');}catch(e){toast('Fotoğraf yüklenemedi','err');return;}}
+  if(af){try{photo_url=await uploadFile(af,'yc-apt-img');}catch(e){toast('Fotoğraf yüklenemedi','err');return;}}
   const payload={property_id:document.getElementById('apt-prop-id').value,apt_no:no,floor:document.getElementById('apt-floor').value,type:document.getElementById('apt-type').value,size_m2:parseFloat(document.getElementById('apt-size').value)||null,notes:document.getElementById('apt-notes').value};
   if(photo_url)payload.photo_url=photo_url;
   const aid=document.getElementById('apt-id').value;
@@ -1438,7 +1443,11 @@ async function saveApartment(){
 async function deleteApartment(id){
   const{data:aktivKiraciler}=await db.from('yc_tenants').select('id,name').eq('apartment_id',id).eq('is_active',true).limit(1000);
   if(aktivKiraciler&&aktivKiraciler.length>0){
-    alert(`⚠️ Bu daireyi silemezsiniz!\n\nİçinde aktif kiracı var: ${aktivKiraciler[0].name}\n\nÖnce kiracıyı pasife alın veya silin, sonra daireyi silebilirsiniz.`);
+    alert(`⚠️ Bu daireyi silemezsiniz!
+
+İçinde aktif kiracı var: ${aktivKiraciler[0].name}
+
+Önce kiracıyı pasife alın veya silin, sonra daireyi silebilirsiniz.`);
     return;
   }
   if(!confirm('Bu daireyi silmek istediğinizden emin misiniz?'))return;
@@ -1466,7 +1475,7 @@ async function saveFixture(){
   if(!name){toast('Demirbaş adı zorunludur','err');return;}
   let photo_url=undefined;
   const ff=window['fix-photo-placeholder_file'];
-  if(ff){try{photo_url=await uploadFile(ff,'yc-fixtures');}catch(e){}}
+  if(ff){try{photo_url=await uploadFile(ff,'yc-fix-img');}catch(e){}}
   const payload={apartment_id:document.getElementById('fix-apt-id').value,name,category:document.getElementById('fix-cat').value,condition:document.getElementById('fix-cond').value,brand:document.getElementById('fix-brand').value,model:document.getElementById('fix-model').value,serial_no:document.getElementById('fix-serial').value,purchase_date:document.getElementById('fix-date').value||null,notes:document.getElementById('fix-notes').value};
   if(photo_url)payload.photo_url=photo_url;
   const fid=document.getElementById('fix-id').value;
@@ -1649,7 +1658,7 @@ async function saveTenant(){
 }
 
 async function setTenantPassive(id){
-  if(!confirm('Bu kiracıyı pasife almak istediğinizden emin misiniz?\nÖdeme geçmişi ve raporlarda görünmeye devam edecek.'))return;
+  if(!confirm('Bu kiracıyı pasife almak istediğinizden emin misiniz? Ödeme geçmişi korunacak.'))return;
   await db.from('yc_tenants').update({is_active:false}).eq('id',id);
   toast('Kiracı pasife alındı');
   closeModal('modal-detail');loadTenants();
@@ -1662,7 +1671,7 @@ async function reactivateTenant(id){
 }
 
 function deleteTenantConfirm(id){
-  const sifre=prompt('Kiracıyı kalıcı olarak silmek için silme şifresini girin:\n(Tüm ödeme geçmişi ve belgeler de silinecektir!)');
+  const sifre=prompt('Kiracıyı kalıcı olarak silmek için silme şifresini girin: (Tüm ödeme geçmişi ve belgeler de silinecektir!)');
   if(sifre===null)return;
   if(sifre!=='1234'){toast('Şifre yanlış, silme iptal edildi.','err');return;}
   deleteTenantForReal(id);
@@ -2303,7 +2312,8 @@ async function markDepoPaid(tid,period,existingId,beklenenTutar){
     openPaymentModal(existingId,tid);
     return;
   }
-  const girilen=prompt(`Depozito taksit tutarını girin:\n(Beklenen: ₺${Number(beklenenTutar).toLocaleString('tr-TR')})`,beklenenTutar);
+  const girilen=prompt(`Depozito taksit tutarını girin:
+(Beklenen: ₺${Number(beklenenTutar).toLocaleString('tr-TR')})`,beklenenTutar);
   if(girilen===null)return;
   const tutar=parseFloat(girilen)||beklenenTutar;
   const today=new Date().toISOString().split('T')[0];
