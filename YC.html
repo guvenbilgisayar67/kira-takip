@@ -1496,9 +1496,19 @@ async function deleteFixture(id){
 
 // ==================== KİRACILAR ====================
 async function loadTenants(){
-  const{data}=await db.from('yc_tenants').select('*,apartments(apt_no,property_id,properties(name))').order('created_at',{ascending:false});
-  allTenants=(data||[]).filter(t=>t.is_active);
-  window._allTenantsRaw=data||[];
+  const{data,error}=await db.from('yc_tenants').select('*').order('created_at',{ascending:false}).limit(500);
+  if(error){toast('Kiracılar yüklenemedi: '+error.message,'err');return;}
+  const{data:apts}=await db.from('yc_apartments').select('id,apt_no,property_id');
+  const{data:props}=await db.from('yc_properties').select('id,name');
+  const aptMap={};(apts||[]).forEach(a=>{aptMap[a.id]=a;});
+  const propMap={};(props||[]).forEach(p=>{propMap[p.id]=p;});
+  const enriched=(data||[]).map(t=>{
+    const apt=aptMap[t.apartment_id]||null;
+    const prop=apt?propMap[apt.property_id]||null:null;
+    return{...t,yc_apartments:apt?{...apt,yc_properties:prop}:null};
+  });
+  allTenants=enriched.filter(t=>t.is_active);
+  window._allTenantsRaw=enriched;
   filterTenants();
 }
 
@@ -1509,7 +1519,7 @@ function filterTenants(){
   let list=raw.filter(t=>{
     if(sf==='active'&&!t.is_active)return false;
     if(sf==='passive'&&t.is_active)return false;
-    return(t.name||'').toLowerCase().includes(q)||(t.tc||'').includes(q)||(t.apartments?.apt_no||'').includes(q)||(t.phone||'').includes(q);
+    return(t.name||'').toLowerCase().includes(q)||(t.tc||'').includes(q)||(t.yc_apartments?.apt_no||'').includes(q)||(t.phone||'').includes(q);
   });
   list.sort((a,b)=>{
     const an=parseInt(a.yc_apartments?.apt_no||a.apartments?.apt_no||a.apt_no)||0;
@@ -1527,8 +1537,8 @@ function renderTenantGrid(list){
     const dl=daysLeft(t.contract_end);
     const cBadge=t.contract_end?(dl<0?'<span class="badge bd">Süresi doldu</span>':dl<30?`<span class="badge bd">${dl} gün</span>`:dl<60?`<span class="badge bw">${dl} gün</span>`:`<span class="badge bs">${Math.round(dl/30)} ay</span>`):'';
     const photo=t.photo_url?`<img src="${t.photo_url}" class="img-circle">`:`<div class="avatar ${avColor(t.name)}">${initials(t.name)}</div>`;
-    const propName=t.apartments?.properties?.name||'';
-    const aptNo=t.apartments?.apt_no||t.apt_no||'?';
+    const propName=t.yc_apartments?.yc_properties?.name||'';
+    const aptNo=t.yc_apartments?.apt_no||t.apt_no||'?';
     return`<div class="tenant-card" onclick="showTenantDetail('${t.id}')">
       ${!t.is_active?'<div class="pasif-banner">⛔ Pasif kiracı</div>':''}
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
@@ -1688,7 +1698,7 @@ async function deleteTenantForReal(id){
 }
 
 async function showTenantDetail(id){
-  const{data:t}=await db.from('yc_tenants').select('*,apartments(apt_no,floor,properties(name))').eq('id',id).single();
+  const{data:t}=await db.from('yc_tenants').select('*').eq('id',id).single();
   const{data:pays}=await db.from('yc_payments').select('*').eq('tenant_id',id).order('period',{ascending:false}).limit(24);
   const{data:docs}=await db.from('yc_documents').select('*').eq('tenant_id',id);
   if(!t)return;
@@ -1701,7 +1711,7 @@ async function showTenantDetail(id){
       ${photo}
       <div style="flex:1">
         <div style="font-size:18px;font-weight:700">${t.name}</div>
-        <div style="font-size:13px;color:#888780">${t.apartments?.properties?.name||''} ${t.apartments?.apt_no?'— Daire '+t.apartments.apt_no:''}</div>
+        <div style="font-size:13px;color:#888780">${t.yc_apartments?.yc_properties?.name||''} ${t.yc_apartments?.apt_no?'— Daire '+t.yc_apartments?.apt_no:''}</div>
         ${t.phone?`<a href="tel:${t.phone}" style="font-size:13px;color:#185fa5">${t.phone}</a>`:''}
       </div>
       <div style="display:flex;gap:6px;flex-wrap:wrap">
@@ -1832,9 +1842,9 @@ async function loadPayments(){
 }
 
 async function openPaymentModal(payId,tenantId){
-  const{data:tAll}=await db.from('yc_tenants').select('id,name,apt_no,rent,aidat,internet,apartment_id,apartments(apt_no)').order('name');
+  const{data:tAll}=await db.from('yc_tenants').select('id,name,apt_no,rent,aidat,internet,apartment_id').order('name');
   const sel=document.getElementById('pay-tenant-sel');
-  sel.innerHTML=(tAll||[]).map(t=>`<option value="${t.id}" data-rent="${t.rent||0}" data-aidat="${t.aidat||0}" data-internet="${t.internet||0}">${t.name} — D.${t.apartments?.apt_no||t.apt_no||'?'}</option>`).join('');
+  sel.innerHTML=(tAll||[]).map(t=>`<option value="${t.id}" data-rent="${t.rent||0}" data-aidat="${t.aidat||0}" data-internet="${t.internet||0}">${t.name} — D.${t.yc_apartments?.apt_no||t.apt_no||'?'}</option>`).join('');
   const now=new Date();
   document.getElementById('pay-period').value=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
   document.getElementById('pay-date').value=now.toISOString().split('T')[0];
@@ -2051,7 +2061,7 @@ async function loadStatusReport(){
   if(r1.error){el.innerHTML=`<div class="empty" style="color:#a32d2d">Kiracı yüklenemedi: ${r1.error.message}</div>`;return;}
   const tenants=r1.data||[];
 
-  const r2=await db.from('yc_apartments').select('id,apt_no');
+  const r2=await db.from('yc_apartments').select('id,apt_no,property_id');
   const aptMapS={};(r2.data||[]).forEach(a=>{aptMapS[a.id]=a;});
 
   const sel=document.getElementById('status-report-tenant');
