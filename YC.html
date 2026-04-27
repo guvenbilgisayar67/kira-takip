@@ -1146,7 +1146,7 @@ async function loadDashboard(){
     db.from('yc_properties').select('id').eq('is_active',true),
     db.from('yc_tenants').select('*').eq('is_active',true).limit(1000),
     db.from('yc_apartments').select('*'),
-    db.from('yc_payments').select('*,tenants(name,apartment_id,is_active)').order('created_at',{ascending:false}).limit(20)
+    db.from('yc_payments').select('*').order('created_at',{ascending:false}).limit(20)
   ]);
   allTenants=tenants||[];allProperties=props||[];allApartments=apts||[];
 
@@ -1770,7 +1770,7 @@ async function loadPayments(){
   const status=document.getElementById('pay-status-filter').value;
 
   const{data:allTens}=await db.from('yc_tenants').select('id,name,is_active,apartment_id,rent,aidat,internet,payment_day,contract_start,contract_end');
-  const{data:allApts}=await db.from('yc_apartments').select('id,apt_no,property_id,properties(name)');
+  const{data:allApts}=await db.from('yc_apartments').select('id,apt_no,property_id');
   const tenMapP={};(allTens||[]).forEach(t=>{tenMapP[t.id]=t;});
   const aptMapP={};(allApts||[]).forEach(a=>{aptMapP[a.id]=a;});
 
@@ -2079,6 +2079,7 @@ async function loadStatusReport(){
 
   const paidMap={};
   pays.forEach(p=>{paidMap[p.tenant_id+'_'+p.period]=p;});
+  const toplamOdendi=pays.filter(p=>p.status==='paid').reduce((s,p)=>s+(p.total||0),0);
 
   const monthsS=['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];
   const today=new Date();
@@ -2340,7 +2341,7 @@ async function markDepoPaid(tid,period,existingId,beklenenTutar){
 // ==================== KİRACı TABLOLARI ====================
 async function initPayPlan(){
   const{data:tenants}=await db.from('yc_tenants').select('id,name,apt_no,rent,aidat,internet,contract_start,payment_day,apartment_id,property_id').eq('is_active',true).order('name').limit(1000);
-  const{data:apts}=await db.from('yc_apartments').select('id,apt_no,property_id,properties(name)');
+  const{data:apts}=await db.from('yc_apartments').select('id,apt_no,property_id');
   const aptMapPP={};(apts||[]).forEach(a=>{aptMapPP[a.id]=a;});
   const sel=document.getElementById('pp-tenant-sel');
   sel.innerHTML='<option value="">— Kiracı seçin —</option>'+(tenants||[]).map(t=>{
