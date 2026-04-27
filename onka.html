@@ -1097,7 +1097,7 @@ async function autoMarkLateForTenant(tenantId){
   const payDay=t.payment_day||5;
   const total=(t.rent||0)+(t.aidat||0)+(t.internet||0);
   const toInsert=[];
-  for(let m=1;m<=24;m++){
+  for(let m=0;m<=24;m++){
     const d=new Date(today.getFullYear(),today.getMonth()-m,1);
     const period=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
     const dueDate=new Date(d.getFullYear(),d.getMonth(),payDay);
@@ -1122,7 +1122,7 @@ async function autoMarkLate(){
     const end=t.contract_end?new Date(t.contract_end):null;
     const payDay=t.payment_day||5;
     const total=(t.rent||0)+(t.aidat||0)+(t.internet||0);
-    for(let m=1;m<=24;m++){
+    for(let m=0;m<=24;m++){
       const d=new Date(today.getFullYear(),today.getMonth()-m,1);
       const period=`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
       const dueDate=new Date(d.getFullYear(),d.getMonth(),payDay);
