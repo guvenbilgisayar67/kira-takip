@@ -2102,41 +2102,34 @@ async function loadStatusReport(){
     html+=`<td style="padding:7px 8px;text-align:right;font-weight:700;color:#185fa5">${fmt(yillikToplam)}</td></tr>`;
   });
 
-  const toplamOdendi=pays.filter(p=>p.status==='paid').reduce((s,p)=>s+(p.total||0),0);
-  const gecikmePays=pays.filter(p=>p.status==='late');
-  const toplamGecikti=gecikmePays.length+filteredTenants.reduce((s,t)=>{
-    return s+monthsS.filter((_,i)=>{
+  // Gecikmeli toplam — tablo satırlarından hesapla (en doğru yöntem)
+  let toplamGeciktiTutar=0;
+  let toplamGeciktiSayisi=0;
+  filteredTenants.forEach(t=>{
+    const kiraTotal=(t.rent||0)+(t.aidat||0)+(t.internet||0);
+    monthsS.forEach((_,i)=>{
       const period=`${year}-${String(i+1).padStart(2,'0')}`;
       const dueDate=new Date(parseInt(year),i,t.payment_day||5);
       const pay=paidMap[t.id+'_'+period];
-      if(pay)return false;
-      if(dueDate>=today)return false;
       const pS=new Date(parseInt(year),i,1),pE=new Date(parseInt(year),i+1,1);
       const cS=t.contract_start?new Date(t.contract_start):null;
       const cE=t.contract_end?new Date(t.contract_end):null;
-      return(!cS||pE>cS)&&(!cE||pS<cE);
-    }).length;
-  },0);
-  const toplamGeciktiTutar=gecikmePays.reduce((s,p)=>s+(p.total||0),0)+
-    filteredTenants.reduce((s,t)=>{
-      const kiraTotal=(t.rent||0)+(t.aidat||0)+(t.internet||0);
-      return s+monthsS.filter((_,i)=>{
-        const period=`${year}-${String(i+1).padStart(2,'0')}`;
-        const dueDate=new Date(parseInt(year),i,t.payment_day||5);
-        const pay=paidMap[t.id+'_'+period];
-        if(pay)return false;
-        if(dueDate>=today)return false;
-        const pS=new Date(parseInt(year),i,1),pE=new Date(parseInt(year),i+1,1);
-        const cS=t.contract_start?new Date(t.contract_start):null;
-        const cE=t.contract_end?new Date(t.contract_end):null;
-        return(!cS||pE>cS)&&(!cE||pS<cE);
-      }).length*kiraTotal;
-    },0);
+      const isActive=(!cS||pE>cS)&&(!cE||pS<cE);
+      if(!isActive)return;
+      if(pay&&pay.status==='late'){
+        toplamGeciktiTutar+=(pay.total||kiraTotal);
+        toplamGeciktiSayisi++;
+      }else if(!pay&&dueDate<today){
+        toplamGeciktiTutar+=kiraTotal;
+        toplamGeciktiSayisi++;
+      }
+    });
+  });
 
   html+=`</tbody></table></div>
     <div style="display:flex;gap:12px;margin-top:12px;flex-wrap:wrap;font-size:13px">
       <span style="background:#eaf3de;color:#27500a;padding:4px 12px;border-radius:20px;font-weight:500">✅ Toplam ödendi: ${fmt(toplamOdendi)}</span>
-      <span style="background:#fcebeb;color:#a32d2d;padding:4px 12px;border-radius:20px;font-weight:500">❌ Gecikmeli: ${toplamGecikti} ödeme — ${fmt(toplamGeciktiTutar)}</span>
+      <span style="background:#fcebeb;color:#a32d2d;padding:4px 12px;border-radius:20px;font-weight:500">❌ Gecikmeli: ${toplamGeciktiSayisi} ödeme — ${fmt(toplamGeciktiTutar)}</span>
     </div>`;
 
   el.innerHTML=html;
