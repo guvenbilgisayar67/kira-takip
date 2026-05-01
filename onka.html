@@ -2625,20 +2625,33 @@ async function loadTaxDecl() {
   const useIstisna = document.getElementById('tax-istisna').checked;
   document.getElementById('tax-gercek-gider-wrap').style.display = method === 'gercek' ? 'block' : 'none';
 
-  // Verilerden dolu daireleri çek
-  const {data: apts} = await db.from('apartments').select('id,apt_no,type,property_id,properties(name)').order('apt_no');
-  const {data: pays} = await db.from('payments').select('tenant_id,total,period,tenants(apartment_id,is_active)').eq('status','paid').like('period', year+'-%');
+  // Verilerden dolu daireleri çek - join olmadan
+  const {data: apts} = await db.from('apartments').select('id,apt_no,type,property_id').order('apt_no');
+  const {data: props} = await db.from('properties').select('id,name').eq('is_active',true);
+  const propMapT={};(props||[]).forEach(p=>{propMapT[p.id]=p;});
+
+  // Sadece ONKA kiracılarının ödemelerini çek
+  const {data: tenants} = await db.from('tenants').select('id,apartment_id').eq('is_active',true);
+  const tenantIds=(tenants||[]).map(t=>t.id);
+  const tenAptMap={};(tenants||[]).forEach(t=>{if(t.apartment_id)tenAptMap[t.id]=t.apartment_id;});
+
+  let pays=[];
+  if(tenantIds.length>0){
+    const {data:paysData} = await db.from('payments').select('tenant_id,total,period').eq('status','paid').like('period', year+'-%').in('tenant_id',tenantIds);
+    pays=paysData||[];
+  }
 
   // Daire bazlı tahsilat hesapla
   const aptMap = {};
   (pays||[]).forEach(p => {
-    const aptId = p.tenants?.apartment_id;
+    const aptId = tenAptMap[p.tenant_id];
     if (!aptId) return;
     aptMap[aptId] = (aptMap[aptId]||0) + (p.total||0);
   });
 
   taxAptData = (apts||[]).map(a => ({
     ...a,
+    properties: propMapT[a.property_id]||null,
     tahsilat: Math.round(aptMap[a.id]||0),
     edited: false
   }));
