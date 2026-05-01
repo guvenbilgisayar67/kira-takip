@@ -1949,6 +1949,8 @@ async function loadReports(){
   // Apartment ve tenant bilgilerini ayrı çek
   const{data:allApts}=await db.from('apartments').select('id,apt_no,property_id');
   const aptMapR={};(allApts||[]).forEach(a=>{aptMapR[a.id]=a;});
+  allApartments=allApts||[]; // global güncelle
+  allProperties=props||[];   // global güncelle
   const{data:allTens}=await db.from('tenants').select('id,apartment_id,property_id');
   const tenMapR={};(allTens||[]).forEach(t=>{tenMapR[t.id]=t;});
 
@@ -1988,17 +1990,20 @@ async function loadReports(){
   // Daire bazlı aylık detay
   const aptDetailMap={};
   const monthsA=['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];
+  const propNameMap={};(props||[]).forEach(p=>{propNameMap[p.id]=p.name;});
   paidPays.forEach(p=>{
     const k=p._apt?.apt_no;
     if(!k)return;
-    if(!aptDetailMap[k])aptDetailMap[k]={total:0,mo:{}};
-    aptDetailMap[k].total+=(p.total||0);
+    const propName=propNameMap[p._apt?.property_id]||'';
+    const label=propName?`${propName} — D.${k}`:`D.${k}`;
+    if(!aptDetailMap[label])aptDetailMap[label]={total:0,mo:{},aptNo:parseInt(k)||0};
+    aptDetailMap[label].total+=(p.total||0);
     if(p.period){
       const mon=parseInt(p.period.split('-')[1])-1;
-      if(mon>=0&&mon<=11)aptDetailMap[k].mo[mon]=(aptDetailMap[k].mo[mon]||0)+(p.total||0);
+      if(mon>=0&&mon<=11)aptDetailMap[label].mo[mon]=(aptDetailMap[label].mo[mon]||0)+(p.total||0);
     }
   });
-  const aptArr=Object.entries(aptDetailMap).sort((a,b)=>(parseInt(a[0])||0)-(parseInt(b[0])||0));
+  const aptArr=Object.entries(aptDetailMap).sort((a,b)=>a[1].aptNo-b[1].aptNo);
   const maxA=Math.max(...aptArr.map(x=>x[1].total),1);
   document.getElementById('apt-chart').innerHTML=aptArr.length?`
     <div style="overflow-x:auto">
@@ -2009,8 +2014,8 @@ async function loadReports(){
           <th style="padding:6px 8px;text-align:right">Toplam</th>
         </tr></thead>
         <tbody>
-          ${aptArr.map(([apt,data])=>`<tr>
-            <td style="padding:6px 8px;font-weight:600">D.${apt}</td>
+          ${aptArr.map(([label,data])=>`<tr>
+            <td style="padding:6px 8px;font-weight:600;white-space:nowrap">${label}</td>
             ${monthsA.map((_,i)=>{
               const v=(data.mo&&data.mo[i])||0;
               return`<td style="padding:6px 4px;text-align:center;color:${v>0?'#27500a':'#d3d1c7'}">${v>0?fmt(v).replace('₺',''):'—'}</td>`;
