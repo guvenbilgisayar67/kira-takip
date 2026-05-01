@@ -2167,19 +2167,28 @@ function calcRent(){
 // ==================== HATIRLATICILAR ====================
 async function loadReminders(){
   const{data}=await db.from('yc_reminders').select('*').order('scheduled_date');
+  const{data:tens}=await db.from('yc_tenants').select('id,name,apartment_id').limit(500);
+  const{data:apts2}=await db.from('yc_apartments').select('id,apt_no');
+  const tenMapR={};(tens||[]).forEach(t=>{tenMapR[t.id]=t;});
+  const aptMapR={};(apts2||[]).forEach(a=>{aptMapR[a.id]=a;});
   const list=document.getElementById('reminder-list');
   if(!data||!data.length){list.innerHTML='<div class="empty">Hatırlatıcı yok</div>';return;}
   const sc={planned:'bi',sent:'bs',cancelled:'bg'};
   const sl={planned:'Planlandı',sent:'Gönderildi',cancelled:'İptal'};
-  list.innerHTML=data.map(r=>`<div style="display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid #f0f0ec">
+  list.innerHTML=data.map(r=>{
+    const ten=tenMapR[r.tenant_id];
+    const aptNo=aptMapR[ten?.apartment_id]?.apt_no||'?';
+    const tenLabel=ten?ten.name+' — D.'+aptNo:'Tüm kiracılar';
+    return`<div style="display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid #f0f0ec">
     <div style="flex:1">
       <div style="font-size:13px;font-weight:500">${r.title||r.type}</div>
-      <div style="font-size:12px;color:#888780">${r.tenants?r.tenants.name+' — D.'+r.tenants.apt_no:'Tüm kiracılar'} • ${r.scheduled_date||'—'} • ${r.channel||''}</div>
+      <div style="font-size:12px;color:#888780">${tenLabel} • ${r.scheduled_date||'—'} • ${r.channel||''}</div>
       ${r.message?`<div style="font-size:12px;color:#5f5e5a;margin-top:2px">${r.message}</div>`:''}
     </div>
     <span class="badge ${sc[r.status]||'bg'}">${sl[r.status]||r.status}</span>
     <button class="btn btn-sm btn-danger" onclick="deleteReminder('${r.id}')">🗑️</button>
-  </div>`).join('');
+  </div>`;
+  }).join('');
 }
 
 async function openReminderModal(){
