@@ -2630,8 +2630,8 @@ async function loadTaxDecl() {
   const {data: props} = await db.from('properties').select('id,name').eq('is_active',true);
   const propMapT={};(props||[]).forEach(p=>{propMapT[p.id]=p;});
 
-  // Sadece ONKA kiracılarının ödemelerini çek
-  const {data: tenants} = await db.from('tenants').select('id,apartment_id').eq('is_active',true);
+  // Tüm kiracıları çek (aktif+pasif) - beyanname tüm yılı kapsar
+  const {data: tenants} = await db.from('tenants').select('id,apartment_id').limit(500);
   const tenantIds=(tenants||[]).map(t=>t.id);
   const tenAptMap={};(tenants||[]).forEach(t=>{if(t.apartment_id)tenAptMap[t.id]=t.apartment_id;});
 
@@ -2649,12 +2649,15 @@ async function loadTaxDecl() {
     aptMap[aptId] = (aptMap[aptId]||0) + (p.total||0);
   });
 
-  taxAptData = (apts||[]).map(a => ({
-    ...a,
-    properties: propMapT[a.property_id]||null,
-    tahsilat: Math.round(aptMap[a.id]||0),
-    edited: false
-  }));
+  taxAptData = (apts||[])
+    .filter(a=>a.property_id) // mülksüz daireleri filtrele
+    .map(a => ({
+      ...a,
+      properties: propMapT[a.property_id]||null,
+      tahsilat: Math.round(aptMap[a.id]||0),
+      edited: false
+    }))
+    .filter(a=>a.tahsilat>0||tenants.some(t=>t.apartment_id===a.id)); // geliri 0 ve kiracısız daireleri gizle
 
   renderTaxTable(year);
   calcTaxResult(year, method, useIstisna);
