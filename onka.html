@@ -2650,14 +2650,14 @@ async function loadTaxDecl() {
   });
 
   taxAptData = (apts||[])
-    .filter(a=>a.property_id) // mülksüz daireleri filtrele
+    .filter(a=>a.property_id && propMapT[a.property_id])
     .map(a => ({
       ...a,
       properties: propMapT[a.property_id]||null,
       tahsilat: Math.round(aptMap[a.id]||0),
       edited: false
     }))
-    .filter(a=>a.tahsilat>0||tenants.some(t=>t.apartment_id===a.id)); // geliri 0 ve kiracısız daireleri gizle
+    .sort((a,b)=>(parseInt(a.apt_no)||0)-(parseInt(b.apt_no)||0));
 
   renderTaxTable(year);
   calcTaxResult(year, method, useIstisna);
