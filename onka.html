@@ -2626,7 +2626,7 @@ async function loadTaxDecl() {
   document.getElementById('tax-gercek-gider-wrap').style.display = method === 'gercek' ? 'block' : 'none';
 
   // Verilerden dolu daireleri çek - join olmadan
-  const {data: apts} = await db.from('apartments').select('id,apt_no,type,property_id').order('apt_no');
+  const {data: apts} = await db.from('apartments').select('id,apt_no,type,property_id').in('property_id',(props||[]).map(p=>p.id)).order('apt_no');
   const {data: props} = await db.from('properties').select('id,name').eq('is_active',true);
   const propMapT={};(props||[]).forEach(p=>{propMapT[p.id]=p;});
 
