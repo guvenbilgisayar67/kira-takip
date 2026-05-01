@@ -2060,6 +2060,7 @@ async function loadStatusReport(){
 
   const paidMap={};
   pays.forEach(p=>{paidMap[p.tenant_id+'_'+p.period]=p;});
+  const toplamOdendi=pays.filter(p=>p.status==='paid').reduce((s,p)=>s+(p.total||0),0);
 
   const monthsS=['Oca','Şub','Mar','Nis','May','Haz','Tem','Ağu','Eyl','Eki','Kas','Ara'];
   const today=new Date();
