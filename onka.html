@@ -1818,9 +1818,13 @@ async function loadPayments(){
     <td>${(()=>{
       if(p.status==='late'){
         const payDay=ten?.payment_day||5;
-        const parts=(p.period||'').split('-');
-        const due=parts.length===2?new Date(parseInt(parts[0]),parseInt(parts[1])-1,payDay):null;
-        const days=due?Math.floor((new Date()-due)/86400000):0;
+        const parts=(p.period||'2000-01').split('-');
+        const yr=parseInt(parts[0]),mo=parseInt(parts[1])-1;
+        const due=new Date(yr,mo,payDay);
+        const today=new Date();
+        today.setHours(0,0,0,0);
+        due.setHours(0,0,0,0);
+        const days=Math.floor((today-due)/86400000);
         return`<span class="badge bd">❌ Gecikmeli${days>0?' ('+days+' gün)':''}</span>`;
       }
       return statusBadge(p.status);
