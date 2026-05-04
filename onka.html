@@ -1811,8 +1811,16 @@ async function loadPayments(){
     <td>${propName?propName+' ':''} D.${aptNo}</td>
     <td>${p.period||''}</td>
     <td>${fmt(p.rent)}</td><td>${fmt(p.aidat)}</td><td>${fmt(p.internet)}</td><td>${fmt(p.other)}</td>
-    <td><b>${fmt(p.total)}</b></td><td>${p.payment_date||'—'}</td>
-    <td>${statusBadge(p.status)}</td>
+    <td><b>${fmt(p.total)}</b></td>
+    <td>${p.payment_date?new Date(p.payment_date).toLocaleDateString('tr-TR'):'—'}</td>
+    <td>${(()=>{
+      if(p.status==='late'){
+        const due=new Date(p.period+'-'+(ten?String(ten.payment_day||5).padStart(2,'0'):'05'));
+        const days=Math.floor((new Date()-due)/86400000);
+        return`<span class="badge bd">❌ Gecikmeli${days>0?' ('+days+' gün)':''}</span>`;
+      }
+      return statusBadge(p.status);
+    })()}</td>
     <td style="display:flex;gap:4px">
       ${isFake
         ?`<button class="btn btn-sm btn-primary" onclick="handlePayPlanAction('${p.tenant_id}','${p.period}','','pending',${p.total})">+ İşle</button>`
