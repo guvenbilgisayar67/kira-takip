@@ -1809,7 +1809,10 @@ async function loadPayments(){
     const propName=propMapP[apt?.property_id]?.name||'';
     const isFake=p._fake;
     return`<tr>
-    <td>${ten?.name||'—'}${!ten?.is_active?'<span class="badge bg" style="margin-left:4px;font-size:10px">Pasif</span>':''}</td>
+    <td>
+      <div>${ten?.name||'—'}${!ten?.is_active?'<span class="badge bg" style="margin-left:4px;font-size:10px">Pasif</span>':''}</div>
+      <div style="font-size:11px;color:#888780">Her ayın ${ten?.payment_day||5}. günü</div>
+    </td>
     <td>${propName?propName+' ':''} D.${aptNo}</td>
     <td>${p.period||''}</td>
     <td>${fmt(p.rent)}</td><td>${fmt(p.aidat)}</td><td>${fmt(p.internet)}</td><td>${fmt(p.other)}</td>
