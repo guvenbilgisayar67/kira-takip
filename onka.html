@@ -394,8 +394,8 @@ textarea{resize:vertical;min-height:70px}
           <option value="">— Kiracı seçin —</option>
         </select>
         <select id="pp-year-sel" onchange="loadPayPlan()" style="width:120px">
-          <option value="all">Tüm yıllar</option>
           <option value="2026">2026</option>
+          <option value="all">Tüm yıllar</option>
           <option value="2025">2025</option>
           <option value="2024">2024</option>
         </select>
@@ -2400,11 +2400,8 @@ async function loadPayPlan(){
   const depToplam=t.deposit||0;
   const depTaksit=depInst>1?Math.round(depToplam/depInst):depToplam;
 
-  // Önceden ödenen depozito taksitlerini hesapla
-  const depPaidPays=Object.entries(paidMap)
-    .filter(([k,v])=>k.endsWith('_dep')&&v.status==='paid')
-    .map(([k,v])=>v);
-  const depOdenenToplam=depPaidPays.reduce((s,p)=>s+(p.total||p.other||0),0);
+  // Depozito ödemelerini sırayla al (period'a göre sıralı)
+  const depPaysList=(pays||[]).filter(p=>p.payment_type==='depozito').sort((a,b)=>a.period>b.period?1:-1);
 
   // Tüm ayları üret
   let rows=[];
@@ -2438,9 +2435,9 @@ async function loadPayPlan(){
 
       // Depozito taksit satırı (sadece ilk N ay)
       if(depInst>1&&taksitNo<=depInst){
-        const depPay=paidMap[period+'_dep'];
+        const depPay=depPaysList[taksitNo-1]||null;
         // Eğer bu taksit ödendiyse gerçek ödenen tutarı al
-        const buTaksitOdenen=depPay?.status==='paid'?(depPay.total||depPay.other||0):0;
+        const buTaksitOdenen=depPay?(depPay.total||depPay.other||0):0;
         // Kalan depozito = toplam - şimdiye kadar ödenen (bu taksit dahil değil)
         const kalanDepozito=depToplam-depOdenenSofar;
         // Bu taksit için tutar: son taksitse kalan tümü, değilse eşit bölüm
@@ -2448,9 +2445,8 @@ async function loadPayPlan(){
         // deposit_amounts varsa oradan al, yoksa eşit böl
         const depAmounts=t.deposit_amounts||[];
         const planliTutar=depAmounts[taksitNo-1]!=null?depAmounts[taksitNo-1]:Math.round(kalanDepozito/kalanTaksitSayisi);
-        const buTaksitTutar=depPay?.status==='paid'
-          ?buTaksitOdenen
-          :planliTutar;
+        const buTaksitTutar=depPay?buTaksitOdenen:planliTutar;
+        let depDurum,depDurumTr,depClass;
         if(depPay&&depPay.status==='paid'){depDurum='paid';depDurumTr='✅ Ödendi';depClass='pp-row-paid';}
         else if(dueDate<today&&!depPay){depDurum='late';depDurumTr='❌ Gecikmeli';depClass='pp-row-late';}
         else{depDurum='future';depDurumTr='🕐 Bekleniyor';depClass='pp-row-future';}
@@ -2550,9 +2546,11 @@ async function loadPayPlan(){
               <td style="text-align:center;font-size:13px;white-space:nowrap">${r.durumTr}</td>
               <td>
                 ${r.isDepo?`<button class="btn btn-sm" onclick="markDepoPaid('${tid}','${r.depPeriod}','${r.depPayId||''}',${r.tutar})">
-                  ${r.durum==='paid'?'✏️':'✅ İşle'}</button>`
+                  ${r.durum==='paid'?'✏️ Düzenle':'✅ İşle'}</button>
+                  ${r.depPayId&&r.durum!=='paid'?`<button class="btn btn-sm btn-danger" onclick="deletePayment('${r.depPayId}');loadPayPlan()">🗑️</button>`:''}`
                 :`<button class="btn btn-sm" onclick="handlePayPlanAction('${tid}','${r.period}','${r.pay?.id||''}','${r.durum}',${r.tutar})">
-                  ${r.pay?'✏️':'+ İşle'}</button>`}
+                  ${r.pay?'✏️ Düzenle':'+ İşle'}</button>
+                  ${r.pay&&r.durum!=='paid'?`<button class="btn btn-sm btn-danger" onclick="deletePayment('${r.pay.id}');loadPayPlan()">🗑️</button>`:''}`}
               </td>
             </tr>`).join('')}
           </tbody>
