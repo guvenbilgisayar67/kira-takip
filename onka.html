@@ -857,6 +857,58 @@ textarea{resize:vertical;min-height:70px}
   </div>
 </div>
 
+<!-- SÖZLEŞME UZAT MODAL -->
+<div class="overlay" id="modal-renew">
+  <div class="modal">
+    <div class="modal-header">
+      <span class="modal-title">🔄 Sözleşme Uzat</span>
+      <button class="close-btn" onclick="closeModal('modal-renew')">×</button>
+    </div>
+    <div class="modal-body">
+      <input type="hidden" id="renew-tenant-id">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Mevcut sözleşme bitiş</label>
+          <input id="renew-old-end" readonly style="background:#f5f5f0;color:#888780">
+        </div>
+        <div class="form-group">
+          <label>Yeni bitiş tarihi</label>
+          <input id="renew-new-end" type="date">
+        </div>
+        <div class="form-group">
+          <label>Mevcut kira (₺)</label>
+          <input id="renew-old-rent" readonly style="background:#f5f5f0;color:#888780">
+        </div>
+        <div class="form-group">
+          <label>TÜFE oranı (%)</label>
+          <input id="renew-tufe" type="number" value="25" step="0.1" oninput="calcRenewRent()">
+        </div>
+        <div class="form-group">
+          <label>Yeni kira (₺)</label>
+          <input id="renew-new-rent" type="number" oninput="updateRenewTotal()">
+        </div>
+        <div class="form-group">
+          <label>Aidat (₺)</label>
+          <input id="renew-new-aidat" type="number" oninput="updateRenewTotal()">
+        </div>
+        <div class="form-group">
+          <label>İnternet (₺)</label>
+          <input id="renew-new-internet" type="number" oninput="updateRenewTotal()">
+        </div>
+        <div class="metric">
+          <div class="metric-label">Yeni aylık toplam</div>
+          <div class="metric-value mv-green" id="renew-total-preview">₺0</div>
+        </div>
+      </div>
+      <div class="rent-calc" id="renew-calc-detail" style="margin-top:12px"></div>
+      <div class="btn-row">
+        <button class="btn" onclick="closeModal('modal-renew')">İptal</button>
+        <button class="btn btn-primary" onclick="saveRenew()">Uzat ve kaydet</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- DEPOZİTO MODAL -->
 <div class="overlay" id="modal-depo">
   <div class="modal">
@@ -2221,6 +2273,66 @@ async function deleteReminder(id){
   toast('Silindi');loadReminders();
 }
 
+function openRenewModal(tid, contractEnd, rent, aidat, internet){
+  document.getElementById('renew-tenant-id').value=tid;
+  document.getElementById('renew-old-end').value=contractEnd||'—';
+  document.getElementById('renew-old-rent').value='₺'+Number(rent).toLocaleString('tr-TR');
+  // Yeni bitiş = mevcut bitiş + 1 yıl
+  if(contractEnd){
+    const d=new Date(contractEnd);
+    d.setFullYear(d.getFullYear()+1);
+    document.getElementById('renew-new-end').value=d.toISOString().split('T')[0];
+  }
+  document.getElementById('renew-new-rent').value=rent||0;
+  document.getElementById('renew-new-aidat').value=aidat||0;
+  document.getElementById('renew-new-internet').value=internet||0;
+  calcRenewRent();
+  openModal('modal-renew');
+}
+
+function calcRenewRent(){
+  const oldRent=parseFloat(document.getElementById('renew-old-rent').value.replace('₺','').replace(/\./g,'').replace(',','.'))||0;
+  const tufe=parseFloat(document.getElementById('renew-tufe').value)||0;
+  const newRent=Math.round(oldRent*(1+tufe/100));
+  document.getElementById('renew-new-rent').value=newRent;
+  const legal=Math.round(oldRent*1.25);
+  document.getElementById('renew-calc-detail').innerHTML=
+    `${Number(oldRent).toLocaleString('tr-TR')} + %${tufe} TÜFE = <b>₺${newRent.toLocaleString('tr-TR')}</b>
+    &nbsp;|&nbsp; Yasal tavan (%25): <b>₺${legal.toLocaleString('tr-TR')}</b>
+    ${newRent>legal?'<span style="color:#a32d2d"> — ⚠️ Yasal sınır aşılıyor!</span>':''}`;
+  updateRenewTotal();
+}
+
+function updateRenewTotal(){
+  const r=parseFloat(document.getElementById('renew-new-rent').value)||0;
+  const a=parseFloat(document.getElementById('renew-new-aidat').value)||0;
+  const i=parseFloat(document.getElementById('renew-new-internet').value)||0;
+  document.getElementById('renew-total-preview').textContent='₺'+(r+a+i).toLocaleString('tr-TR');
+}
+
+async function saveRenew(){
+  const tid=document.getElementById('renew-tenant-id').value;
+  const newEnd=document.getElementById('renew-new-end').value;
+  const newRent=parseFloat(document.getElementById('renew-new-rent').value)||0;
+  const newAidat=parseFloat(document.getElementById('renew-new-aidat').value)||0;
+  const newInternet=parseFloat(document.getElementById('renew-new-internet').value)||0;
+  if(!newEnd){toast('Yeni bitiş tarihi zorunludur','err');return;}
+  if(!newRent){toast('Yeni kira bedeli zorunludur','err');return;}
+  const{error}=await db.from('tenants').update({
+    contract_end:newEnd,
+    rent:newRent,
+    aidat:newAidat,
+    internet:newInternet
+  }).eq('id',tid);
+  if(error){toast('Hata: '+error.message,'err');return;}
+  // Gecikmeli kayıtları yeniden hesapla
+  await db.from('payments').delete().eq('tenant_id',tid).eq('status','late');
+  await autoMarkLateForTenant(tid);
+  toast('Sözleşme uzatıldı ve kira güncellendi! ✅');
+  closeModal('modal-renew');
+  loadPayPlan();
+}
+
 function openDepoModal(tid,deposit,inst,amounts){
   document.getElementById('depo-tenant-id').value=tid;
   document.getElementById('depo-amount').value=deposit;
@@ -2495,7 +2607,10 @@ async function loadPayPlan(){
     <div class="card" style="margin-bottom:16px">
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
         <div class="section-title" style="margin:0">Kiracı bilgileri</div>
-        <button class="btn btn-sm btn-warning" onclick="openDepoModal('${t.id}',${t.deposit||0},${depInst},${JSON.stringify(t.deposit_amounts||[])})">⚙️ Depozito düzenle</button>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn btn-sm btn-warning" onclick="openDepoModal('${t.id}',${t.deposit||0},${depInst},${JSON.stringify(t.deposit_amounts||[])})">⚙️ Depozito düzenle</button>
+          <button class="btn btn-sm btn-primary" onclick="openRenewModal('${t.id}','${t.contract_end||''}',${t.rent||0},${t.aidat||0},${t.internet||0})">🔄 Sözleşme uzat</button>
+        </div>
       </div>
       <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px">
         <div class="di"><span class="di-label">Kiracı</span><span class="di-val" style="font-size:15px;font-weight:700">${t.name}</span></div>
