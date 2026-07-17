@@ -2273,6 +2273,13 @@ async function deleteReminder(id){
   toast('Silindi');loadReminders();
 }
 
+async function silVeYenile(id){
+  if(!confirm('Bu kaydı silmek istediğinizden emin misiniz?'))return;
+  await db.from('payments').delete().eq('id',id);
+  toast('Kayıt silindi');
+  loadPayPlan();
+}
+
 function openRenewModal(tid, contractEnd, rent, aidat, internet){
   document.getElementById('renew-tenant-id').value=tid;
   document.getElementById('renew-old-end').value=contractEnd||'—';
@@ -2662,10 +2669,10 @@ async function loadPayPlan(){
               <td>
                 ${r.isDepo?`<button class="btn btn-sm" onclick="markDepoPaid('${tid}','${r.depPeriod}','${r.depPayId||''}',${r.tutar})">
                   ${r.durum==='paid'?'✏️ Düzenle':'✅ İşle'}</button>
-                  ${r.depPayId&&r.durum!=='paid'?`<button class="btn btn-sm btn-danger" onclick="deletePayment('${r.depPayId}');loadPayPlan()">🗑️</button>`:''}`
+                  ${r.depPayId&&r.durum!=='paid'?`<button class="btn btn-sm btn-danger" onclick="silVeYenile('${r.depPayId}')">🗑️</button>`:''}`
                 :`<button class="btn btn-sm" onclick="handlePayPlanAction('${tid}','${r.period}','${r.pay?.id||''}','${r.durum}',${r.tutar})">
                   ${r.pay?'✏️ Düzenle':'+ İşle'}</button>
-                  ${r.pay&&r.durum!=='paid'?`<button class="btn btn-sm btn-danger" onclick="deletePayment('${r.pay.id}');loadPayPlan()">🗑️</button>`:''}`}
+                  ${r.pay&&r.durum!=='paid'?`<button class="btn btn-sm btn-danger" onclick="silVeYenile('${r.pay?.id}')">🗑️</button>`:''}`}
               </td>
             </tr>`).join('')}
           </tbody>
