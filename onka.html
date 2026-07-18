@@ -2539,7 +2539,7 @@ async function loadPayPlan(){
     if(kiraPay&&kiraPay.status==='paid'){kiraDurum='paid';kiraDurumTr='✅ Ödendi';kiraClass='pp-row-paid';}
     else if(kiraPay&&kiraPay.status==='late'){kiraDurum='late';kiraDurumTr='❌ Gecikmeli';kiraClass='pp-row-late';}
     else if(dueDate<today&&!kiraPay){kiraDurum='late';kiraDurumTr='❌ Gecikmeli';kiraClass='pp-row-late';}
-    else if(kiraPay&&kiraPay.status==='pending'){kiraDurum='pending';kiraDurumTr='⏳ Bekliyor';kiraClass='pp-row-future';}
+    else if(kiraPay&&kiraPay.status==='pending'){kiraDurum='pending';kiraDurumTr='🕐 Bekleniyor';kiraClass='pp-row-future';}
     else{kiraDurum='future';kiraDurumTr='🕐 Bekleniyor';kiraClass='pp-row-future';}
 
     const showYear=yearFilter==='all'||cur.getFullYear().toString()===yearFilter;
